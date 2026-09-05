@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="FIGHTER GROUP INTEL placeholder briefing graphic">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#2b3524"/>
+      <stop offset="60%" stop-color="#1c2318"/>
+      <stop offset="100%" stop-color="#11150e"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8a9a5b"/>
+      <stop offset="100%" stop-color="#4d5a35"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="450" fill="url(#bg)"/>
+  <g opacity="0.18" stroke="#8a9a5b" stroke-width="1">
+    <circle cx="400" cy="225" r="80" fill="none"/>
+    <circle cx="400" cy="225" r="140" fill="none"/>
+    <circle cx="400" cy="225" r="200" fill="none"/>
+    <line x1="400" y1="25" x2="400" y2="425"/>
+    <line x1="200" y1="225" x2="600" y2="225"/>
+  </g>
+  <g transform="translate(400,225)">
+    <polygon points="0,-56 15,-16 58,-16 24,10 36,52 0,26 -36,52 -24,10 -58,-16 -15,-16" fill="url(#ring)" opacity="0.9"/>
+  </g>
+  <text x="400" y="360" font-family="Georgia, 'Times New Roman', serif" font-size="26" letter-spacing="4" fill="#c9d1a8" text-anchor="middle">FIGHTER GROUP INTEL</text>
+  <text x="400" y="388" font-family="Arial, sans-serif" font-size="13" letter-spacing="6" fill="#8a9a5b" text-anchor="middle">OPEN-SOURCE INTELLIGENCE BRIEFING</text>
+</svg>

@@ -1,0 +1,83 @@
+// FIGHTER GROUP INTEL / NEWS UPDATE — data model
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Region {
+  SINGAPORE
+  SEA
+  GLOBAL
+  USA
+  MALAYSIA
+  INDONESIA
+  CUSTOM
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Article {
+  id               String        @id @default(cuid())
+  slug             String        @unique
+  title            String
+  region           Region
+  country          String? // set when region = CUSTOM (or to label MY/ID specifically)
+  status           ArticleStatus @default(DRAFT)
+
+  summaryP1        String
+  summaryP2        String
+  didYouKnow       String
+  perspective      String // "Singapore's Perspective" / "How it affects RSAF" (may contain multiple named perspectives)
+  bullets          String // JSON string array, 3-5 quick-brief bullets
+  images           String // JSON array of {url, caption, sourceUrl}
+  sources          String // JSON array of {name, url}
+  reliabilityScore Int           @default(1) // number of corroborating independent sources
+
+  weekOf           DateTime // Monday of the publication week
+  month            Int // 1-12, derived from weekOf, for archive grouping
+  year             Int
+
+  generatedAt      DateTime      @default(now())
+  publishedAt      DateTime?
+  createdBy        String        @default("bot") // "bot" | "admin"
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([region, status])
+  @@index([year, month])
+  @@index([weekOf])
+}
+
+model WeeklyDigest {
+  id          String   @id @default(cuid())
+  weekOf      DateTime @unique
+  summaryText String
+  articleIds  String // JSON string array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RegionSetting {
+  region  Region  @id
+  enabled Boolean @default(true)
+}
+
+model AccessInvite {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  label     String?
+  revoked   Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  lastUsedAt DateTime?
+}

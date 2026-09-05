@@ -1,0 +1,135 @@
+import "server-only";
+import { db } from "@/lib/db";
+import type { Region } from "@/generated/prisma/client";
+import type { ArticleImage, ArticleSource } from "@/lib/types";
+
+export type ArticleCard = {
+  id: string;
+  slug: string;
+  title: string;
+  region: Region;
+  country: string | null;
+  status: string;
+  weekOf: Date;
+  month: number;
+  year: number;
+  reliabilityScore: number;
+  teaser: string;
+  image: ArticleImage | null;
+};
+
+function firstImage(imagesJson: string): ArticleImage | null {
+  try {
+    const images = JSON.parse(imagesJson) as ArticleImage[];
+    return images[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function toCard(a: {
+  id: string;
+  slug: string;
+  title: string;
+  region: Region;
+  country: string | null;
+  status: string;
+  weekOf: Date;
+  month: number;
+  year: number;
+  reliabilityScore: number;
+  summaryP1: string;
+  images: string;
+}): ArticleCard {
+  return {
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    region: a.region,
+    country: a.country,
+    status: a.status,
+    weekOf: a.weekOf,
+    month: a.month,
+    year: a.year,
+    reliabilityScore: a.reliabilityScore,
+    teaser: a.summaryP1.slice(0, 160) + (a.summaryP1.length > 160 ? "…" : ""),
+    image: firstImage(a.images),
+  };
+}
+
+export async function getEnabledRegions(): Promise<Region[]> {
+  const settings = await db.regionSetting.findMany();
+  const disabled = new Set(settings.filter((s) => !s.enabled).map((s) => s.region));
+  const all: Region[] = ["SINGAPORE", "SEA", "GLOBAL", "USA", "MALAYSIA", "INDONESIA"];
+  return all.filter((r) => !disabled.has(r));
+}
+
+export async function getPublishedArticles(region?: Region): Promise<ArticleCard[]> {
+  const rows = await db.article.findMany({
+    where: { status: "PUBLISHED", ...(region ? { region } : {}) },
+    orderBy: { weekOf: "desc" },
+  });
+  return rows.map(toCard);
+}
+
+export async function getArticleBySlug(slug: string) {
+  const row = await db.article.findUnique({ where: { slug } });
+  if (!row) return null;
+  return {
+    ...row,
+    bullets: JSON.parse(row.bullets) as string[],
+    images: JSON.parse(row.images) as ArticleImage[],
+    sources: JSON.parse(row.sources) as ArticleSource[],
+  };
+}
+
+export async function getCurrentDigest() {
+  const digest = await db.weeklyDigest.findFirst({ orderBy: { weekOf: "desc" } });
+  if (!digest) return null;
+  const ids = JSON.parse(digest.articleIds) as string[];
+  return { ...digest, articleIds: ids };
+}
+
+export type ArchiveMonth = {
+  year: number;
+  month: number;
+  weeks: { weekOf: Date; count: number }[];
+};
+
+export async function getArchiveTree(): Promise<ArchiveMonth[]> {
+  const rows = await db.article.findMany({
+    where: { status: { in: ["PUBLISHED", "ARCHIVED"] } },
+    select: { weekOf: true, month: true, year: true },
+    orderBy: { weekOf: "desc" },
+  });
+
+  const monthMap = new Map<string, ArchiveMonth>();
+  for (const row of rows) {
+    const monthKey = `${row.year}-${row.month}`;
+    if (!monthMap.has(monthKey)) {
+      monthMap.set(monthKey, { year: row.year, month: row.month, weeks: [] });
+    }
+    const monthEntry = monthMap.get(monthKey)!;
+    const weekKey = row.weekOf.getTime();
+    const existingWeek = monthEntry.weeks.find((w) => w.weekOf.getTime() === weekKey);
+    if (existingWeek) {
+      existingWeek.count += 1;
+    } else {
+      monthEntry.weeks.push({ weekOf: row.weekOf, count: 1 });
+    }
+  }
+
+  for (const m of monthMap.values()) {
+    m.weeks.sort((a, b) => b.weekOf.getTime() - a.weekOf.getTime());
+  }
+
+  return [...monthMap.values()].sort((a, b) => (a.year !== b.year ? b.year - a.year : b.month - a.month));
+}
+
+export async function getArticlesForWeek(weekOf: Date) {
+  const rows = await db.article.findMany({
+    where: { weekOf },
+    orderBy: { region: "asc" },
+  });
+  return rows.map(toCard);
+}
