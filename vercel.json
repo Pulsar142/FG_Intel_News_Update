@@ -5,10 +5,5 @@
       "path": "/api/cron/weekly-generate",
       "schedule": "0 1 * * 1"
     }
-  ],
-  "functions": {
-    "app/api/cron/weekly-generate/route.ts": {
-      "maxDuration": 300
-    }
-  }
+  ]
 }
