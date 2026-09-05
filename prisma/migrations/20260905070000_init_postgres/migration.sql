@@ -1,11 +1,20 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
+-- CreateEnum
+CREATE TYPE "Region" AS ENUM ('SINGAPORE', 'SEA', 'GLOBAL', 'USA', 'MALAYSIA', 'INDONESIA', 'CUSTOM');
+
+-- CreateEnum
+CREATE TYPE "ArticleStatus" AS ENUM ('DRAFT', 'PUBLISHED', 'ARCHIVED');
+
 -- CreateTable
 CREATE TABLE "Article" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "region" TEXT NOT NULL,
+    "region" "Region" NOT NULL,
     "country" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "status" "ArticleStatus" NOT NULL DEFAULT 'DRAFT',
     "summaryP1" TEXT NOT NULL,
     "summaryP2" TEXT NOT NULL,
     "didYouKnow" TEXT NOT NULL,
@@ -14,40 +23,48 @@ CREATE TABLE "Article" (
     "images" TEXT NOT NULL,
     "sources" TEXT NOT NULL,
     "reliabilityScore" INTEGER NOT NULL DEFAULT 1,
-    "weekOf" DATETIME NOT NULL,
+    "weekOf" TIMESTAMP(3) NOT NULL,
     "month" INTEGER NOT NULL,
     "year" INTEGER NOT NULL,
-    "generatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "publishedAt" DATETIME,
+    "generatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "publishedAt" TIMESTAMP(3),
     "createdBy" TEXT NOT NULL DEFAULT 'bot',
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Article_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "WeeklyDigest" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "weekOf" DATETIME NOT NULL,
+    "id" TEXT NOT NULL,
+    "weekOf" TIMESTAMP(3) NOT NULL,
     "summaryText" TEXT NOT NULL,
     "articleIds" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "WeeklyDigest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "RegionSetting" (
-    "region" TEXT NOT NULL PRIMARY KEY,
-    "enabled" BOOLEAN NOT NULL DEFAULT true
+    "region" "Region" NOT NULL,
+    "enabled" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "RegionSetting_pkey" PRIMARY KEY ("region")
 );
 
 -- CreateTable
 CREATE TABLE "AccessInvite" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "label" TEXT,
     "revoked" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "lastUsedAt" DATETIME
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lastUsedAt" TIMESTAMP(3),
+
+    CONSTRAINT "AccessInvite_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -67,3 +84,4 @@ CREATE UNIQUE INDEX "WeeklyDigest_weekOf_key" ON "WeeklyDigest"("weekOf");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "AccessInvite_token_key" ON "AccessInvite"("token");
+

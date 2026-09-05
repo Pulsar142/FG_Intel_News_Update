@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "../lib/db";
 import { mondayOf } from "../lib/weeks";
 import { subWeeks, getMonth, getYear } from "date-fns";

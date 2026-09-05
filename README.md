@@ -5,17 +5,21 @@ military-technology developments across Singapore, South-East Asia, the USA and 
 Malaysia and Indonesia as toggleable regions, plus ad-hoc "any country" generation), reviewed and
 published through an admin panel.
 
-Built with Next.js 16 (App Router), Tailwind CSS v4, Prisma + SQLite, and the Claude API.
+Built with Next.js 16 (App Router), Tailwind CSS v4, Prisma + Postgres (Neon), and the Claude API.
 
 ## Local setup
 
 ```bash
 npm install
-cp .env.example .env   # then fill in real secrets (see below) — a working dev default is already in .env
-npm run db:migrate     # creates prisma/dev.db and applies the schema
-npm run db:seed        # seeds real example articles (Singapore, Malaysia, Indonesia, Global, USA)
+cp .env.example .env    # fill in DATABASE_URL (a Postgres connection string — see below) and secrets
+npm run db:migrate      # applies the schema to that database
+npm run db:seed         # seeds real example articles (Singapore, Malaysia, Indonesia, Global, USA)
 npm run dev
 ```
+
+Needs a real Postgres database even for local dev — the cheapest way is a free
+[Neon](https://neon.tech) project (Vercel's Storage tab can create one for you too, since it's
+Neon-backed). Copy its connection string into `DATABASE_URL`.
 
 Visit `http://localhost:3000` — dev defaults (change before sharing this instance with anyone):
 
@@ -28,7 +32,7 @@ See `.env.example`. In short:
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | SQLite file path (swap for a Postgres URL in production if you like — update the Prisma datasource provider too) |
+| `DATABASE_URL` | Postgres connection string (Neon, Vercel Postgres, Supabase, etc.) |
 | `SITE_PASSWORD` | Shared password that unlocks the public site |
 | `ADMIN_PASSWORD` | Password for `/admin` |
 | `SESSION_SECRET` | Signs session cookies — generate with `openssl rand -base64 32` |
@@ -68,20 +72,25 @@ See `.env.example`. In short:
 
 ## Deploying (Vercel)
 
-1. Push this repo to GitHub and import it into Vercel.
-2. Set the environment variables above in the Vercel project settings (a fresh, real
-   `SESSION_SECRET`/`CRON_SECRET`, your own passwords, and `ANTHROPIC_API_KEY`).
-3. Vercel Cron auto-adds the `Authorization: Bearer $CRON_SECRET` header for the schedule defined
+1. Push this repo to GitHub and import it into Vercel (needs a GitHub login connection on the
+   Vercel account first: Vercel dashboard → Settings → Login Connections).
+2. Add a Postgres database from the project's **Storage** tab (Neon-backed, free tier) if you
+   don't already have one, or point `DATABASE_URL` at an existing one — either way it needs setting
+   under **Settings → Environment Variables** along with `SITE_PASSWORD`, `ADMIN_PASSWORD`, a fresh
+   `SESSION_SECRET`/`CRON_SECRET`, and `ANTHROPIC_API_KEY`. Env var changes only take effect on the
+   *next* deployment, so redeploy after setting them.
+3. Run `npm run db:migrate` once from a machine with normal network access (a plain TCP connection
+   to the database — not needed again after this) to create the schema, then `npm run db:seed` if
+   you want the example content.
+4. Vercel Cron auto-adds the `Authorization: Bearer $CRON_SECRET` header for the schedule defined
    in `vercel.json` — no extra setup needed there. The cron function is configured for
    `maxDuration: 300` (5 min) since it makes several sequential Claude API + fetch calls; confirm
    your plan supports that duration (Hobby is capped lower).
-4. SQLite (`dev.db`) is fine for a low-traffic demo but is **not** durable on Vercel's serverless
-   filesystem across deploys — for real production use, point `DATABASE_URL` at a hosted Postgres
-   (e.g. Vercel Postgres / Neon) and change `provider = "sqlite"` to `"postgresql"` in
-   `prisma/schema.prisma`, then re-run `prisma migrate dev` once locally against that database
-   before deploying.
 
-Not tied to Vercel specifically — any Node host works for the app itself; you'd just need your own
+The app talks to Postgres via Neon's WebSocket driver (`@prisma/adapter-neon` + `PrismaNeon`,
+`lib/db.ts`) rather than a plain TCP pool — the right choice for short-lived serverless functions,
+and it works whether you're on Neon directly or Vercel's Neon-backed Postgres integration. Not tied
+to Vercel specifically otherwise — any Node host works for the app itself; you'd just need your own
 scheduler (e.g. a plain `cron` job or GitHub Actions) hitting `/api/cron/weekly-generate` with the
 `CRON_SECRET` header on the same schedule.
 
