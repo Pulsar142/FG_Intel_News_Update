@@ -64,7 +64,7 @@ const ARTICLES: ArticleInput[] = [
       "FA-50M bridges the capability gap short-term while Malaysia weighs long-term MRCA options.",
     ],
     images: [
-      { url: PLACEHOLDER, caption: "FIGHTER GROUP INTEL briefing graphic.", sourceUrl: "https://www.asianmilitaryreview.com/2026/01/malaysia-could-fast-track-next-generation-fighter-programme-foc/" },
+      { url: "https://www.asianmilitaryreview.com/wp-content/uploads/2026/01/RMAF-Hornet-scaled.jpg", caption: "An RMAF fighter, amid Malaysia's fighter procurement decisions.", sourceUrl: "https://www.asianmilitaryreview.com/2026/01/malaysia-could-fast-track-next-generation-fighter-programme-foc/" },
     ],
     sources: [
       { name: "Asian Military Review", url: "https://www.asianmilitaryreview.com/2026/01/malaysia-could-fast-track-next-generation-fighter-programme-foc/" },
@@ -120,7 +120,7 @@ const ARTICLES: ArticleInput[] = [
       "Analysts credit joint/interagency integration and rehearsal, not just force size, for the outcome.",
     ],
     images: [
-      { url: PLACEHOLDER, caption: "FIGHTER GROUP INTEL briefing graphic.", sourceUrl: "https://www.army-technology.com/features/what-us-aircraft-were-used-in-operation-absolute-resolve/" },
+      { url: "https://www.army-technology.com/wp-content/uploads/sites/3/2026/01/also-lead.jpg", caption: "Aircraft involved in Operation Absolute Resolve.", sourceUrl: "https://www.army-technology.com/features/what-us-aircraft-were-used-in-operation-absolute-resolve/" },
     ],
     sources: [
       { name: "Army Technology", url: "https://www.army-technology.com/features/what-us-aircraft-were-used-in-operation-absolute-resolve/" },
@@ -149,7 +149,7 @@ const ARTICLES: ArticleInput[] = [
       "Hermes 900 offers ~36 hours endurance, operating hundreds of km from its control station.",
     ],
     images: [
-      { url: PLACEHOLDER, caption: "FIGHTER GROUP INTEL briefing graphic.", sourceUrl: "https://www.asianmilitaryreview.com/2026/02/new-drones-are-buzzing-in-singapore-foc/" },
+      { url: "https://www.asianmilitaryreview.com/wp-content/uploads/2026/02/Hermes-900-scaled.jpg", caption: "The Elbit Systems Hermes 900 MALE UAV.", sourceUrl: "https://www.asianmilitaryreview.com/2026/02/new-drones-are-buzzing-in-singapore-foc/" },
     ],
     sources: [
       { name: "Asian Military Review", url: "https://www.asianmilitaryreview.com/2026/02/new-drones-are-buzzing-in-singapore-foc/" },
