@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getMonth, getYear } from "date-fns";
 import type { Region } from "@/generated/prisma/client";
 import { fetchCandidatesForRegion } from "@/lib/fetchCandidates";
+import { searchWebCandidates } from "@/lib/webSearchCandidates";
 import { crossCheck } from "@/lib/crossCheck";
 import { generateArticleDraft } from "@/lib/generateArticle";
 import { mondayOf } from "@/lib/weeks";
@@ -26,9 +27,15 @@ export async function generateDraftForRegion(
   options: { country?: string; weekOf?: Date } = {}
 ) {
   const weekOf = options.weekOf ?? mondayOf(new Date());
-  const candidates = await fetchCandidatesForRegion(region, {
-    countryFilter: options.country,
-  });
+
+  // Combine the curated RSS source list with a live web search — the RSS
+  // list alone shouldn't be the only way stories get found, and web search
+  // is best-effort (it's skipped, not fatal, if it errors or finds nothing).
+  const [rssCandidates, webCandidates] = await Promise.all([
+    fetchCandidatesForRegion(region, { countryFilter: options.country }),
+    searchWebCandidates(region, { country: options.country }).catch(() => []),
+  ]);
+  const candidates = [...rssCandidates, ...webCandidates];
 
   if (candidates.length === 0) throw new NoCandidatesError(options.country ?? region);
 

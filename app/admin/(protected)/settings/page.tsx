@@ -48,7 +48,9 @@ export default async function SettingsPage() {
       <section>
         <h2 className="stencil mb-2 text-xl text-foreground">Curated Sources</h2>
         <p className="mb-4 font-mono text-xs text-muted">
-          Edit <code>lib/sources.ts</code> to change these — no other code changes needed.
+          Every generation also runs a live web search alongside these, so it isn&apos;t limited to
+          this list — these are just the outlets checked directly first. Edit{" "}
+          <code>lib/sources.ts</code> to change them — no other code changes needed.
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(SOURCES).map(([region, sources]) => (

@@ -59,11 +59,12 @@ See `.env.example`. In short:
     curated source list (edit `lib/sources.ts` to change it), and manage invite links.
 - **Generation pipeline** (`lib/`) — `fetchCandidates.ts` pulls recent, keyword-filtered headlines
   from the curated sources (best-effort RSS discovery; sources without a feed just contribute
-  nothing rather than failing the run); `crossCheck.ts` scores reliability by looking for
-  topically-similar headlines from other outlets; `generateArticle.ts` calls the Claude API
-  (`claude-sonnet-5`) with a structured-output schema to write the article in-house-style, grounded
-  in the fetched source text; `weeklyRun.ts` orchestrates a full weekly cycle across every enabled
-  region.
+  nothing rather than failing the run); `webSearchCandidates.ts` runs a live web search via
+  Claude's hosted `web_search` tool alongside it, so the pipeline isn't limited to the curated
+  list; `crossCheck.ts` scores reliability by looking for topically-similar headlines from other
+  outlets across both sets; `generateArticle.ts` calls the Claude API (`claude-sonnet-5`) with a
+  structured-output schema to write the article in-house-style, grounded in the fetched source
+  text; `weeklyRun.ts` orchestrates a full weekly cycle across every enabled region.
 - **Weekly automation** — `vercel.json` schedules `GET /api/cron/weekly-generate` for
   `0 1 * * 1` (Monday 01:00 UTC = 09:00 Singapore time), guarded by `CRON_SECRET`. It generates one
   draft per enabled region and auto-publishes them, archiving the prior week — matching the
