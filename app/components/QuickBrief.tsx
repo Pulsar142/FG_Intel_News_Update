@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function QuickBrief({ bullets }: { bullets: string[] }) {
   const [pinned, setPinned] = useState(false);
   const [hovering, setHovering] = useState(false);
-  const open = pinned || hovering;
+  // Touch browsers fire a synthetic mouseenter on tap with no matching
+  // mouseleave until you tap elsewhere, so hover state would otherwise get
+  // stuck "on" forever after the first tap. Only trust real hover on
+  // devices that report actual hover/pointer capability.
+  const [canHover, setCanHover] = useState(false);
+  useEffect(() => {
+    setCanHover(window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+  }, []);
+  const open = pinned || (canHover && hovering);
 
   return (
     <div
       className="relative inline-block"
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
+      onMouseEnter={() => canHover && setHovering(true)}
+      onMouseLeave={() => canHover && setHovering(false)}
     >
       <button
         type="button"
