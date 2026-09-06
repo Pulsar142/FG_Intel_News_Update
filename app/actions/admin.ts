@@ -64,17 +64,26 @@ export async function cancelFreeGenerationRequestAction(formData: FormData) {
   revalidatePath("/admin/generate");
 }
 
-export async function regenerateAction(formData: FormData) {
+/** Instant (paid) regenerate — replaces a draft via the Anthropic API. Requires a funded ANTHROPIC_API_KEY. */
+export async function regenerateAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
   await requireAdmin();
   const articleId = String(formData.get("articleId"));
   const article = await db.article.findUniqueOrThrow({ where: { id: articleId } });
 
-  await generateDraftForRegion(article.region, {
-    country: article.country ?? undefined,
-    weekOf: article.weekOf,
-  });
+  try {
+    await generateDraftForRegion(article.region, {
+      country: article.country ?? undefined,
+      weekOf: article.weekOf,
+    });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
   await db.article.delete({ where: { id: articleId } });
   revalidatePath("/admin/pending");
+  return { ok: true };
 }
 
 export async function publishAction(formData: FormData) {

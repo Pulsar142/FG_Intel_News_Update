@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import { REGION_LABELS } from "@/lib/sources";
 import { weekLabel } from "@/lib/weeks";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
-import { publishAction, regenerateAction, discardDraftAction } from "@/app/actions/admin";
+import { publishAction, discardDraftAction } from "@/app/actions/admin";
+import { RegenerateButtons } from "@/app/admin/(protected)/pending/RegenerateButtons";
 import type { ArticleImage } from "@/lib/types";
 
 export default async function PendingReviewPage() {
@@ -66,12 +67,7 @@ export default async function PendingReviewPage() {
                 >
                   Edit
                 </Link>
-                <form action={regenerateAction}>
-                  <input type="hidden" name="articleId" value={d.id} />
-                  <button className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold hover:text-background transition-colors">
-                    Regenerate
-                  </button>
-                </form>
+                <RegenerateButtons articleId={d.id} region={d.region} country={d.country} />
                 <form action={discardDraftAction}>
                   <input type="hidden" name="articleId" value={d.id} />
                   <button className="rounded border border-border px-3 py-1.5 text-muted hover:border-danger hover:text-danger transition-colors">
