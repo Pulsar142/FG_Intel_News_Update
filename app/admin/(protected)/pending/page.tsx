@@ -4,6 +4,7 @@ import { REGION_LABELS } from "@/lib/sources";
 import { weekLabel } from "@/lib/weeks";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { publishAction, regenerateAction, discardDraftAction } from "@/app/actions/admin";
+import type { ArticleImage } from "@/lib/types";
 
 export default async function PendingReviewPage() {
   const drafts = await db.article.findMany({
@@ -24,8 +25,25 @@ export default async function PendingReviewPage() {
         </p>
       ) : (
         <div className="flex flex-col gap-3">
-          {drafts.map((d) => (
-            <div key={d.id} className="rounded border border-border bg-panel p-4">
+          {drafts.map((d) => {
+            const image = (JSON.parse(d.images) as ArticleImage[])[0] ?? null;
+            const isPlaceholder = !image || image.url === "/placeholder-briefing.svg";
+            return (
+            <div key={d.id} className="flex gap-3 rounded border border-border bg-panel p-4">
+              <div className="hidden w-32 shrink-0 sm:block">
+                <div className="aspect-video overflow-hidden rounded border border-border bg-panel-2">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- external/uploaded image, arbitrary source */}
+                  <img
+                    src={image?.url ?? "/placeholder-briefing.svg"}
+                    alt={image?.caption ?? d.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                {isPlaceholder && (
+                  <p className="mt-1 font-mono text-[10px] text-gold">No verified image — edit before publishing.</p>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <p className="stencil text-xs tracking-widest text-gold">
                   {REGION_LABELS[d.region]}
@@ -61,8 +79,10 @@ export default async function PendingReviewPage() {
                   </button>
                 </form>
               </div>
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

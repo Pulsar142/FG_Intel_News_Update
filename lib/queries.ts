@@ -83,11 +83,32 @@ export async function getArticleBySlug(slug: string) {
   };
 }
 
+export type DigestArticle = {
+  slug: string;
+  title: string;
+  region: Region;
+  country: string | null;
+};
+
+/**
+ * Live-joins the digest's article IDs against currently PUBLISHED articles
+ * (rather than trusting the digest's own stored summary text), so a
+ * briefing never keeps naming a story that's since been archived or
+ * deleted.
+ */
 export async function getCurrentDigest() {
   const digest = await db.weeklyDigest.findFirst({ orderBy: { weekOf: "desc" } });
   if (!digest) return null;
   const ids = JSON.parse(digest.articleIds) as string[];
-  return { ...digest, articleIds: ids };
+  const rows = await db.article.findMany({
+    where: { id: { in: ids }, status: "PUBLISHED" },
+    select: { id: true, slug: true, title: true, region: true, country: true },
+  });
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const articles: DigestArticle[] = ids
+    .map((id) => byId.get(id))
+    .filter((a): a is NonNullable<typeof a> => Boolean(a));
+  return { ...digest, articleIds: ids, articles };
 }
 
 export type ArchiveMonth = {

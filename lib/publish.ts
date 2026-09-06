@@ -42,7 +42,12 @@ function firstSentence(text: string): string {
 /** Rebuilds the week's digest roundup from whatever is currently published for it. */
 export async function refreshDigest(weekOf: Date) {
   const published = await db.article.findMany({ where: { status: "PUBLISHED", weekOf } });
-  if (published.length === 0) return;
+  if (published.length === 0) {
+    // Nothing left published for this week (e.g. everything got archived or
+    // deleted) — clear the digest instead of leaving stale text/links behind.
+    await db.weeklyDigest.deleteMany({ where: { weekOf } });
+    return;
+  }
   const summaryText = published.map((a) => firstSentence(a.summaryP1)).join(" ");
   const articleIds = published.map((a) => a.id);
   await db.weeklyDigest.upsert({

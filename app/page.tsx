@@ -39,8 +39,8 @@ export default async function HomePage({
     <>
       <SiteHeader role={session?.role ?? null} />
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6">
-        {digest && !week && digest.articleIds.length > 0 && (
-          <WeeklyBriefing weekOf={digest.weekOf} summaryText={digest.summaryText} />
+        {digest && !week && digest.articles.length > 0 && (
+          <WeeklyBriefing weekOf={digest.weekOf} articles={digest.articles} />
         )}
 
         <div className="flex flex-col gap-6 lg:flex-row">

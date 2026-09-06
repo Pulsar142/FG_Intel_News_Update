@@ -5,6 +5,7 @@ import type { Region } from "@/generated/prisma/client";
 import { fetchCandidatesForRegion } from "@/lib/fetchCandidates";
 import { searchWebCandidates } from "@/lib/webSearchCandidates";
 import { crossCheck } from "@/lib/crossCheck";
+import { findCorroboratingSources } from "@/lib/findCorroboration";
 import { generateArticleDraft } from "@/lib/generateArticle";
 import { mondayOf } from "@/lib/weeks";
 import { publishArticle } from "@/lib/publish";
@@ -44,7 +45,17 @@ export async function generateDraftForRegion(
     (a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0)
   );
   const chosen = sorted[0];
-  const { reliabilityScore, corroboratingSources } = crossCheck(chosen, candidates);
+  const { corroboratingSources: poolCorroboration } = crossCheck(chosen, candidates);
+
+  // The region-wide candidate pool only incidentally turns up corroborating
+  // coverage of the *same* story; run a targeted search for it too, so an
+  // article isn't left backed by a single source whenever that overlap misses.
+  const extraCorroboration =
+    poolCorroboration.length < 2
+      ? await findCorroboratingSources(chosen, poolCorroboration).catch(() => [])
+      : [];
+  const corroboratingSources = [...poolCorroboration, ...extraCorroboration];
+  const reliabilityScore = 1 + corroboratingSources.length;
 
   const draft = await generateArticleDraft({
     region,

@@ -4,6 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { Candidate } from "@/lib/fetchCandidates";
 import { fetchArticleText } from "@/lib/fetchArticleText";
+import { verifyImageUrl } from "@/lib/verifyImage";
 import { slugify } from "@/lib/slug";
 import type { Region } from "@/generated/prisma/client";
 import { REGION_LABELS } from "@/lib/sources";
@@ -93,6 +94,12 @@ Write the FIGHTER GROUP INTEL briefing article for this story, following the hou
     );
   }
 
+  const siteOrigin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
+  const imageUrl =
+    fetched?.ogImage && (await verifyImageUrl(fetched.ogImage, siteOrigin))
+      ? fetched.ogImage
+      : "/placeholder-briefing.svg";
+
   const sources = [
     { name: candidate.sourceName, url: candidate.link },
     ...corroboratingSources,
@@ -110,7 +117,7 @@ Write the FIGHTER GROUP INTEL briefing article for this story, following the hou
     bullets: gen.bullets,
     images: [
       {
-        url: fetched?.ogImage || "/placeholder-briefing.svg",
+        url: imageUrl,
         caption: `Image from the original source article.`,
         sourceUrl: candidate.link,
       },
