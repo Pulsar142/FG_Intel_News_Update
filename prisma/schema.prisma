@@ -105,3 +105,21 @@ model GenerationRequest {
 
   @@index([status])
 }
+
+// The "free workflow" equivalent of regenerateFieldAction (lib/regenerateField.ts):
+// an admin's question/instruction for rewriting one Did You Know or
+// Perspective section, queued instead of calling the Anthropic API. Picked
+// up by the same free-generation Routine, which rewrites the field itself
+// using its own model access and updates the Article directly.
+model FieldRegenerationRequest {
+  id          String                  @id @default(cuid())
+  articleId   String
+  field       String // "didYouKnow" | "perspective"
+  question    String
+  status      GenerationRequestStatus @default(PENDING)
+  note        String?
+  requestedAt DateTime                @default(now())
+  fulfilledAt DateTime?
+
+  @@index([status])
+}

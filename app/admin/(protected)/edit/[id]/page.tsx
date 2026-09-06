@@ -17,6 +17,11 @@ export default async function EditArticlePage({
 
   const images = JSON.parse(article.images) as ArticleImage[];
   const sources = JSON.parse(article.sources) as ArticleSource[];
+  const fieldRequests = await db.fieldRegenerationRequest.findMany({
+    where: { articleId: article.id },
+    orderBy: { requestedAt: "desc" },
+    take: 10,
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -45,6 +50,31 @@ export default async function EditArticlePage({
         </p>
         <RegenerateFieldForm articleId={article.id} field="didYouKnow" label="Did You Know?" />
         <RegenerateFieldForm articleId={article.id} field="perspective" label="Perspective" />
+
+        {fieldRequests.length > 0 && (
+          <div className="flex flex-col gap-1 border-t border-border pt-3">
+            <span className="font-mono text-xs uppercase tracking-widest text-muted">
+              Free Rewrite Requests
+            </span>
+            {fieldRequests.map((r) => (
+              <p key={r.id} className="font-mono text-xs text-muted">
+                {r.field === "didYouKnow" ? "Did You Know?" : "Perspective"} — &quot;{r.question}&quot; —{" "}
+                <span
+                  className={
+                    r.status === "PENDING"
+                      ? "text-gold"
+                      : r.status === "FULFILLED"
+                        ? "text-accent-strong"
+                        : "text-danger"
+                  }
+                >
+                  {r.status}
+                </span>
+                {r.note ? ` (${r.note})` : ""}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

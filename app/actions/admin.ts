@@ -278,3 +278,23 @@ export async function regenerateFieldAction(
   revalidatePath(`/admin/edit/${articleId}`);
   return { ok: true };
 }
+
+/**
+ * The "free workflow" equivalent: queues the question/instruction instead of
+ * calling the Anthropic API. Picked up by the same hourly free-generation
+ * Routine, which rewrites the field itself and updates the Article directly.
+ */
+export async function requestFreeFieldRegenerationAction(
+  _state: RegenerateFieldState,
+  formData: FormData
+): Promise<RegenerateFieldState> {
+  await requireAdmin();
+  const articleId = String(formData.get("articleId"));
+  const field = String(formData.get("field")) as RegenerableField;
+  const question = String(formData.get("question") ?? "").trim();
+  if (!question) return { error: "Enter a question or instruction first." };
+
+  await db.fieldRegenerationRequest.create({ data: { articleId, field, question } });
+  revalidatePath(`/admin/edit/${articleId}`);
+  return { ok: true };
+}
