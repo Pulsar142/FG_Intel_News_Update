@@ -32,6 +32,33 @@ export async function generateAction(
   return { ok: true };
 }
 
+/**
+ * The "free workflow" path: queues a request instead of calling the
+ * Anthropic API. Picked up within about an hour by the free-generation
+ * Routine (a Claude Code session doing the research/writing on its own
+ * model access, no API credits spent), which creates the draft article and
+ * marks this request fulfilled.
+ */
+export async function requestFreeGenerationAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const region = String(formData.get("region") ?? "") as Region;
+  const country = String(formData.get("country") ?? "").trim() || undefined;
+
+  await db.generationRequest.create({ data: { region, country } });
+  revalidatePath("/admin/generate");
+  return { ok: true };
+}
+
+export async function cancelFreeGenerationRequestAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.generationRequest.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+}
+
 export async function regenerateAction(formData: FormData) {
   await requireAdmin();
   const articleId = String(formData.get("articleId"));
@@ -66,6 +93,17 @@ export async function archiveAction(formData: FormData) {
   const articleId = String(formData.get("articleId"));
   await db.article.update({ where: { id: articleId }, data: { status: "ARCHIVED" } });
   revalidatePath("/admin/published");
+  revalidatePath("/");
+}
+
+/** Permanently removes an article (any status) — unlike Archive, this can't be undone. */
+export async function deleteArticleAction(formData: FormData) {
+  await requireAdmin();
+  const articleId = String(formData.get("articleId"));
+  await db.article.delete({ where: { id: articleId } });
+  revalidatePath("/admin/pending");
+  revalidatePath("/admin/published");
+  revalidatePath("/admin/archived");
   revalidatePath("/");
 }
 

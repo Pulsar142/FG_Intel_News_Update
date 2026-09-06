@@ -6,6 +6,7 @@ import { logoutAction } from "@/app/actions/auth";
 const TABS = [
   { href: "/admin/pending", label: "Pending Review" },
   { href: "/admin/published", label: "Published" },
+  { href: "/admin/archived", label: "Archived" },
   { href: "/admin/generate", label: "Generate" },
   { href: "/admin/settings", label: "Sources & Settings" },
 ];

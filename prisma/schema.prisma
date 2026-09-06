@@ -81,3 +81,27 @@ model AccessInvite {
   createdAt DateTime  @default(now())
   lastUsedAt DateTime?
 }
+
+enum GenerationRequestStatus {
+  PENDING
+  FULFILLED
+  FAILED
+}
+
+// A "free workflow" generation request: created when the admin clicks
+// Generate without API credits configured. Picked up and fulfilled by the
+// free-generation Routine (a Claude Code session doing the research/writing
+// on its own model access), which creates the actual DRAFT Article and
+// links it back here.
+model GenerationRequest {
+  id          String                  @id @default(cuid())
+  region      Region
+  country     String?
+  status      GenerationRequestStatus @default(PENDING)
+  articleId   String?
+  note        String?
+  requestedAt DateTime                @default(now())
+  fulfilledAt DateTime?
+
+  @@index([status])
+}
