@@ -29,7 +29,7 @@ const ArticleGenSchema = z.object({
 
 export type ArticleGeneration = z.infer<typeof ArticleGenSchema>;
 
-function perspectiveInstruction(region: Region): string {
+export function perspectiveInstruction(region: Region): string {
   switch (region) {
     case "SINGAPORE":
       return "Write the perspective section as \"How it affects the RSAF\" — one paragraph of military-analyst commentary on the operational or strategic implications for the Republic of Singapore Air Force / SAF.";

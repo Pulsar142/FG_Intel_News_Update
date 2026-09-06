@@ -6,6 +6,7 @@ import { getSession } from "@/lib/session";
 import { generateDraftForRegion } from "@/lib/weeklyRun";
 import { publishArticle, refreshDigest } from "@/lib/publish";
 import { verifyImageUrl } from "@/lib/verifyImage";
+import { regenerateArticleField, type RegenerableField } from "@/lib/regenerateField";
 import type { Region } from "@/generated/prisma/client";
 import type { ArticleImage } from "@/lib/types";
 import { nanoid } from "nanoid";
@@ -223,5 +224,48 @@ export async function replaceArticleImageAction(
   revalidatePath("/admin/archived");
   revalidatePath(`/admin/edit/${articleId}`);
   revalidatePath("/");
+  return { ok: true };
+}
+
+/**
+ * Lets an admin pose a question or instruction ("did any other country
+ * respond?", "focus more on cost") and have just the Did You Know or
+ * Perspective section rewritten to address it — rather than only being able
+ * to hand-edit the existing text.
+ */
+export type RegenerateFieldState = { error?: string; ok?: boolean } | undefined;
+
+export async function regenerateFieldAction(
+  _state: RegenerateFieldState,
+  formData: FormData
+): Promise<RegenerateFieldState> {
+  await requireAdmin();
+  const articleId = String(formData.get("articleId"));
+  const field = String(formData.get("field")) as RegenerableField;
+  const question = String(formData.get("question") ?? "").trim();
+  if (!question) return { error: "Enter a question or instruction first." };
+
+  const article = await db.article.findUniqueOrThrow({ where: { id: articleId } });
+
+  let text: string;
+  try {
+    text = await regenerateArticleField({
+      field,
+      question,
+      region: article.region,
+      country: article.country ?? undefined,
+      title: article.title,
+      summaryP1: article.summaryP1,
+      summaryP2: article.summaryP2,
+      currentText: field === "didYouKnow" ? article.didYouKnow : article.perspective,
+    });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
+
+  await db.article.update({ where: { id: articleId }, data: { [field]: text } });
+  revalidatePath("/admin/pending");
+  revalidatePath("/admin/published");
+  revalidatePath(`/admin/edit/${articleId}`);
   return { ok: true };
 }

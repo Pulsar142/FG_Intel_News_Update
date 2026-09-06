@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { REGION_LABELS } from "@/lib/sources";
 import { EditForm } from "@/app/admin/(protected)/edit/EditForm";
 import { ImageForm } from "@/app/admin/(protected)/edit/ImageForm";
+import { RegenerateFieldForm } from "@/app/admin/(protected)/edit/RegenerateFieldForm";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export default async function EditArticlePage({
@@ -26,6 +27,7 @@ export default async function EditArticlePage({
       </p>
       <ImageForm articleId={article.id} image={images[0] ?? null} sources={sources} />
       <EditForm
+        key={`${article.didYouKnow}|${article.perspective}`}
         articleId={article.id}
         title={article.title}
         summaryP1={article.summaryP1}
@@ -34,6 +36,16 @@ export default async function EditArticlePage({
         perspective={article.perspective}
         bullets={JSON.parse(article.bullets)}
       />
+      <div className="flex flex-col gap-3 rounded border border-border bg-panel p-4">
+        <p className="stencil text-xs tracking-widest text-foreground">AI-Assisted Rewrite</p>
+        <p className="font-mono text-xs text-muted">
+          Ask a question or give an instruction and have just that section rewritten — the fields
+          above update immediately. You can still hand-edit either section and click Save Changes
+          instead.
+        </p>
+        <RegenerateFieldForm articleId={article.id} field="didYouKnow" label="Did You Know?" />
+        <RegenerateFieldForm articleId={article.id} field="perspective" label="Perspective" />
+      </div>
     </div>
   );
 }
