@@ -42,6 +42,7 @@ model Article {
   images           String // JSON array of {url, caption, sourceUrl}
   sources          String // JSON array of {name, url}
   reliabilityScore Int           @default(1) // number of corroborating independent sources
+  articleDate      DateTime? // the underlying news story's own publish date (distinct from weekOf/publishedAt, which are about our own site)
 
   weekOf           DateTime // Monday of the publication week
   month            Int // 1-12, derived from weekOf, for archive grouping

@@ -160,6 +160,8 @@ export async function editArticleAction(
     .split("\n")
     .map((b) => b.trim())
     .filter(Boolean);
+  const articleDateRaw = String(formData.get("articleDate") ?? "").trim();
+  const articleDate = articleDateRaw ? new Date(`${articleDateRaw}T00:00:00.000Z`) : null;
 
   const article = await db.article.update({
     where: { id: articleId },
@@ -170,6 +172,7 @@ export async function editArticleAction(
       didYouKnow: String(formData.get("didYouKnow") ?? ""),
       perspective: String(formData.get("perspective") ?? ""),
       bullets: JSON.stringify(bullets),
+      articleDate,
     },
   });
   await refreshDigest(article.weekOf);

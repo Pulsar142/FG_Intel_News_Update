@@ -124,6 +124,7 @@ Write the FIGHTER GROUP INTEL briefing article for this story, following the hou
     ],
     sources,
     reliabilityScore: 1 + corroboratingSources.length,
+    articleDate: candidate.publishedAt,
     weekOf,
   };
 }

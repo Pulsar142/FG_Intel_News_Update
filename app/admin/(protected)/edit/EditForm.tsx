@@ -11,6 +11,7 @@ export function EditForm({
   didYouKnow,
   perspective,
   bullets,
+  articleDate,
 }: {
   articleId: string;
   title: string;
@@ -19,6 +20,7 @@ export function EditForm({
   didYouKnow: string;
   perspective: string;
   bullets: string[];
+  articleDate: string;
 }) {
   const [state, formAction, pending] = useActionState(editArticleAction, undefined);
 
@@ -32,6 +34,11 @@ export function EditForm({
       <label className="flex flex-col gap-2">
         <span className={label}>Title</span>
         <input name="title" defaultValue={title} className={field} />
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Article date (the news story&apos;s own date, not our publish date)</span>
+        <input type="date" name="articleDate" defaultValue={articleDate} className={field} />
       </label>
 
       <label className="flex flex-col gap-2">

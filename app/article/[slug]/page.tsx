@@ -5,7 +5,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { QuickBrief } from "@/app/components/QuickBrief";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { REGION_LABELS } from "@/lib/sources";
-import { publishedDateLabel } from "@/lib/weeks";
+import { storyDateLabel } from "@/lib/weeks";
 
 export default async function ArticlePage({
   params,
@@ -26,7 +26,7 @@ export default async function ArticlePage({
         <p className="stencil mb-2 text-xs tracking-widest text-gold">
           {REGION_LABELS[article.region]}
           {article.country ? ` · ${article.country}` : ""} —{" "}
-          {publishedDateLabel(article.publishedAt, article.weekOf)}
+          {storyDateLabel(article.articleDate, article.publishedAt, article.weekOf)}
         </p>
         <h1 className="stencil mb-3 text-2xl leading-tight text-foreground sm:text-3xl">
           {article.title}

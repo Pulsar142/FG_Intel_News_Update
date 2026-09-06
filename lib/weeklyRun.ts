@@ -81,6 +81,7 @@ export async function generateDraftForRegion(
       images: JSON.stringify(draft.images),
       sources: JSON.stringify(draft.sources),
       reliabilityScore: draft.reliabilityScore,
+      articleDate: draft.articleDate ?? null,
       weekOf: draft.weekOf,
       month: getMonth(draft.weekOf) + 1,
       year: getYear(draft.weekOf),

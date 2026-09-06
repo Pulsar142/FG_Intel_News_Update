@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ArticleCard } from "@/lib/queries";
 import { REGION_LABELS } from "@/lib/sources";
-import { shortDateLabel } from "@/lib/weeks";
+import { storyDateLabel } from "@/lib/weeks";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 
 export function ArticleCardView({ article }: { article: ArticleCard }) {
@@ -29,7 +29,7 @@ export function ArticleCardView({ article }: { article: ArticleCard }) {
         </h3>
         <p className="text-sm text-muted line-clamp-3">{article.teaser}</p>
         <div className="mt-auto flex items-center justify-between pt-2 font-mono text-[10px] text-muted">
-          <span>{shortDateLabel(article.publishedAt, article.weekOf)}</span>
+          <span>{storyDateLabel(article.articleDate, article.publishedAt, article.weekOf)}</span>
           <ReliabilityBadge score={article.reliabilityScore} />
         </div>
       </div>

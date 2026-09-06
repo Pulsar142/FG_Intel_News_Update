@@ -22,5 +22,6 @@ export type ArticleInput = {
   images: ArticleImage[];
   sources: ArticleSource[];
   reliabilityScore: number;
+  articleDate?: Date;
   weekOf: Date;
 };

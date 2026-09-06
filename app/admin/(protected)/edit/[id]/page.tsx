@@ -40,6 +40,7 @@ export default async function EditArticlePage({
         didYouKnow={article.didYouKnow}
         perspective={article.perspective}
         bullets={JSON.parse(article.bullets)}
+        articleDate={article.articleDate?.toISOString().slice(0, 10) ?? ""}
       />
       <div className="flex flex-col gap-3 rounded border border-border bg-panel p-4">
         <p className="stencil text-xs tracking-widest text-foreground">AI-Assisted Rewrite</p>

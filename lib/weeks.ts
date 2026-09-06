@@ -9,14 +9,14 @@ export function weekLabel(weekOf: Date): string {
   return `Week of ${format(weekOf, "d MMM yyyy")}`;
 }
 
-/** The exact date an article went live, falling back to its week if it was never published. */
-export function publishedDateLabel(publishedAt: Date | null, weekOf: Date): string {
-  return `Published ${format(publishedAt ?? weekOf, "d MMM yyyy")}`;
-}
-
-/** Compact form of the same date, for tight card layouts. */
-export function shortDateLabel(publishedAt: Date | null, weekOf: Date): string {
-  return format(publishedAt ?? weekOf, "d MMM yyyy");
+/**
+ * The date of the underlying news story itself — not when we published it.
+ * Prefers articleDate (the source's own publish date); falls back to our
+ * own publishedAt, then the bucketed week, for older rows that predate
+ * articleDate or where the source's date genuinely couldn't be determined.
+ */
+export function storyDateLabel(articleDate: Date | null, publishedAt: Date | null, weekOf: Date): string {
+  return format(articleDate ?? publishedAt ?? weekOf, "d MMM yyyy");
 }
 
 export function monthLabel(month: number, year: number): string {

@@ -14,6 +14,7 @@ export type ArticleCard = {
   month: number;
   year: number;
   publishedAt: Date | null;
+  articleDate: Date | null;
   reliabilityScore: number;
   teaser: string;
   image: ArticleImage | null;
@@ -39,6 +40,7 @@ function toCard(a: {
   month: number;
   year: number;
   publishedAt: Date | null;
+  articleDate: Date | null;
   reliabilityScore: number;
   summaryP1: string;
   images: string;
@@ -54,6 +56,7 @@ function toCard(a: {
     month: a.month,
     year: a.year,
     publishedAt: a.publishedAt,
+    articleDate: a.articleDate,
     reliabilityScore: a.reliabilityScore,
     teaser: a.summaryP1.slice(0, 160) + (a.summaryP1.length > 160 ? "…" : ""),
     image: firstImage(a.images),

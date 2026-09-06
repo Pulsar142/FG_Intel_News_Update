@@ -16,6 +16,10 @@ const WebCandidatesSchema = z.object({
         url: z.string().describe("Direct URL to the article, exactly as returned by search."),
         sourceName: z.string().describe("The outlet's name, e.g. 'Reuters' or 'Naval News'."),
         summary: z.string().describe("One-sentence summary of what the article reports."),
+        publishedDate: z
+          .string()
+          .nullable()
+          .describe("The article's own publish date in YYYY-MM-DD, exactly as reported by the source — null if genuinely undated."),
       })
     )
     .max(6),
@@ -46,7 +50,8 @@ Rules:
 - Only return stories from the last ${cutoffDays} days.
 - Prefer reputable, established outlets (e.g. Reuters, AP, BBC, Jane's, Defense News, The War Zone, Naval News, Breaking Defense, Associated Press, national broadsheets) over unverified blogs or aggregators.
 - Every result MUST be a real article you found via search — never invent a title, outlet, or URL. If search finds fewer than 6 solid results, return fewer.
-- Prefer distinct stories over near-duplicates of the same event from the same outlet.`;
+- Prefer distinct stories over near-duplicates of the same event from the same outlet.
+- Report each article's own publish date (from its byline/dateline) as YYYY-MM-DD — never invent one; use null if you genuinely can't find it.`;
 
   const response = await client.messages.parse({
     model: MODEL,
@@ -74,11 +79,15 @@ Rules:
         return false;
       }
     })
-    .map((c) => ({
-      title: c.title,
-      link: c.url,
-      sourceName: c.sourceName,
-      sourceUrl: new URL(c.url).origin,
-      contentSnippet: c.summary,
-    }));
+    .map((c) => {
+      const publishedAt = c.publishedDate ? new Date(c.publishedDate) : undefined;
+      return {
+        title: c.title,
+        link: c.url,
+        sourceName: c.sourceName,
+        sourceUrl: new URL(c.url).origin,
+        contentSnippet: c.summary,
+        publishedAt: publishedAt && !isNaN(publishedAt.getTime()) ? publishedAt : undefined,
+      };
+    });
 }

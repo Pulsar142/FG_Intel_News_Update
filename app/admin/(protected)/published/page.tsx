@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { REGION_LABELS } from "@/lib/sources";
-import { publishedDateLabel } from "@/lib/weeks";
+import { storyDateLabel } from "@/lib/weeks";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { archiveAction, deleteArticleAction } from "@/app/actions/admin";
 import { DeleteButton } from "@/app/components/DeleteButton";
@@ -31,7 +31,7 @@ export default async function PublishedPage() {
               <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <p className="stencil text-xs tracking-widest text-gold">
                   {REGION_LABELS[a.region]}
-                  {a.country ? ` · ${a.country}` : ""} — {publishedDateLabel(a.publishedAt, a.weekOf)}
+                  {a.country ? ` · ${a.country}` : ""} — {storyDateLabel(a.articleDate, a.publishedAt, a.weekOf)}
                 </p>
                 <ReliabilityBadge score={a.reliabilityScore} />
               </div>
