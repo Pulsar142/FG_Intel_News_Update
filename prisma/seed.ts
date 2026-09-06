@@ -285,7 +285,7 @@ async function main() {
         month: getMonth(a.weekOf) + 1,
         year: getYear(a.weekOf),
         createdBy: "admin",
-        publishedAt: new Date(),
+        publishedAt: a.weekOf,
       },
     });
     if (isCurrentWeek) publishedIds.push(article.id);
