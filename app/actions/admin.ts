@@ -8,6 +8,7 @@ import { publishArticle, refreshDigest } from "@/lib/publish";
 import { verifyImageUrl } from "@/lib/verifyImage";
 import { regenerateArticleField, type RegenerableField } from "@/lib/regenerateField";
 import { generateFunFact } from "@/lib/generateFunFact";
+import { publishFunFact } from "@/lib/publishFunFact";
 import type { Region } from "@/generated/prisma/client";
 import type { ArticleImage } from "@/lib/types";
 import { nanoid } from "nanoid";
@@ -381,11 +382,29 @@ export async function cancelFunFactRequestAction(formData: FormData) {
   revalidatePath("/admin/generate");
 }
 
-/** Permanently removes a fun fact from the public box. */
+/** Permanently removes a fun fact — including the currently published one, if any. */
 export async function deleteFunFactAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   await db.funFact.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+}
+
+/** Makes this the one fun fact shown to viewers, archiving whatever was published before it. */
+export async function publishFunFactAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await publishFunFact(id);
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+}
+
+/** Pulls the currently published fun fact from public view without deleting it. */
+export async function unpublishFunFactAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.funFact.update({ where: { id }, data: { status: "ARCHIVED" } });
   revalidatePath("/admin/generate");
   revalidatePath("/");
 }

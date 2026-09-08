@@ -127,19 +127,24 @@ model FieldRegenerationRequest {
   @@index([status])
 }
 
-// A single one-to-two-sentence military fact shown in the public "Military
-// Fun Facts" box, grounded in a real search-verified source where possible.
+// A one-to-two-sentence military fact, grounded in a real search-verified
+// source where possible. Lifecycle mirrors Article (DRAFT -> PUBLISHED ->
+// ARCHIVED): admin-requested facts land as DRAFT for review; the weekly
+// Routine auto-generates and auto-publishes a fresh one each week. Only one
+// row may ever be PUBLISHED at a time — that's the single fact shown to
+// viewers — enforced by publishFunFact() and backed by a partial unique
+// index (see migration).
 model FunFact {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   text       String
   topic      String? // category or the admin's prompt, e.g. "stealth technology"
   sourceName String?
   sourceUrl  String?
-  active     Boolean  @default(true) // admin can pull one from public view without deleting it
-  createdBy  String   @default("bot") // "bot" | "admin"
-  createdAt  DateTime @default(now())
+  status     ArticleStatus @default(DRAFT)
+  createdBy  String        @default("bot") // "bot" | "admin"
+  createdAt  DateTime      @default(now())
 
-  @@index([active])
+  @@index([status])
 }
 
 // The "free workflow" equivalent for fun facts: an admin's topic/question,

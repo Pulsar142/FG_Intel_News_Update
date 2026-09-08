@@ -63,12 +63,9 @@ function toCard(a: {
   };
 }
 
-export async function getFunFacts(limit = 5) {
-  return db.funFact.findMany({
-    where: { active: true },
-    orderBy: { createdAt: "desc" },
-    take: limit,
-  });
+/** The single fun fact currently shown to viewers, or null if none is published. */
+export async function getPublishedFunFact() {
+  return db.funFact.findFirst({ where: { status: "PUBLISHED" } });
 }
 
 export async function getEnabledRegions(): Promise<Region[]> {

@@ -5,7 +5,7 @@ import {
   getArticlesForWeek,
   getCurrentDigest,
   getEnabledRegions,
-  getFunFacts,
+  getPublishedFunFact,
   getPublishedArticles,
 } from "@/lib/queries";
 import { getSession } from "@/lib/session";
@@ -26,10 +26,10 @@ export default async function HomePage({
   const enabledRegions = await getEnabledRegions();
   const activeRegion = enabledRegions.includes(region as Region) ? (region as Region) : undefined;
 
-  const [digest, archiveTree, funFacts] = await Promise.all([
+  const [digest, archiveTree, funFact] = await Promise.all([
     getCurrentDigest(),
     getArchiveTree(),
-    getFunFacts(),
+    getPublishedFunFact(),
   ]);
 
   let articles;
@@ -51,7 +51,7 @@ export default async function HomePage({
 
         <div className="flex flex-col gap-6 lg:flex-row">
           <div className="flex flex-col gap-4 lg:shrink-0">
-            <MilitaryFunFacts facts={funFacts} />
+            <MilitaryFunFacts fact={funFact} />
             <ArchiveSidebar tree={archiveTree} activeWeek={week} />
           </div>
           <div className="flex-1 min-w-0">
