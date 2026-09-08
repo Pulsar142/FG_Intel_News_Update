@@ -59,6 +59,7 @@ export default async function ArticlePage({
         <article className="flex flex-col gap-4 text-[15px] leading-relaxed text-foreground">
           <p>{article.summaryP1}</p>
           <p>{article.summaryP2}</p>
+          {article.summaryP3 && <p>{article.summaryP3}</p>}
         </article>
 
         <div className="mt-6 rounded border border-border bg-panel p-4">
@@ -66,18 +67,20 @@ export default async function ArticlePage({
           <p className="text-sm leading-relaxed text-foreground">{article.didYouKnow}</p>
         </div>
 
-        <div className="mt-4 rounded border border-gold/40 bg-panel p-4">
-          <p className="stencil mb-2 text-xs tracking-widest text-gold">
-            {article.region === "SINGAPORE" || perspectiveParagraphs.length === 1
-              ? "Singapore's Perspective"
-              : "Perspectives"}
-          </p>
-          <div className="flex flex-col gap-3 text-sm leading-relaxed text-foreground">
-            {perspectiveParagraphs.map((p, i) => (
-              <p key={i}>{p}</p>
-            ))}
+        {!article.perspectiveHidden && (
+          <div className="mt-4 rounded border border-gold/40 bg-panel p-4">
+            <p className="stencil mb-2 text-xs tracking-widest text-gold">
+              {article.region === "SINGAPORE" || perspectiveParagraphs.length === 1
+                ? "Singapore's Perspective"
+                : "Perspectives"}
+            </p>
+            <div className="flex flex-col gap-3 text-sm leading-relaxed text-foreground">
+              {perspectiveParagraphs.map((p, i) => (
+                <p key={i}>{p}</p>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mt-6 border-t border-border pt-4">
           <p className="stencil mb-2 text-xs tracking-widest text-muted">

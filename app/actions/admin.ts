@@ -102,6 +102,22 @@ export async function discardDraftAction(formData: FormData) {
   revalidatePath("/admin/pending");
 }
 
+/** Lets an admin hide the Perspective section from the public article page without deleting the text — flip back any time. */
+export async function toggleHidePerspectiveAction(formData: FormData) {
+  await requireAdmin();
+  const articleId = String(formData.get("articleId"));
+  const article = await db.article.findUniqueOrThrow({ where: { id: articleId } });
+  await db.article.update({
+    where: { id: articleId },
+    data: { perspectiveHidden: !article.perspectiveHidden },
+  });
+  revalidatePath("/admin/pending");
+  revalidatePath("/admin/published");
+  revalidatePath("/admin/archived");
+  revalidatePath(`/admin/edit/${articleId}`);
+  revalidatePath("/");
+}
+
 export async function archiveAction(formData: FormData) {
   await requireAdmin();
   const articleId = String(formData.get("articleId"));
@@ -162,6 +178,7 @@ export async function editArticleAction(
     .filter(Boolean);
   const articleDateRaw = String(formData.get("articleDate") ?? "").trim();
   const articleDate = articleDateRaw ? new Date(`${articleDateRaw}T00:00:00.000Z`) : null;
+  const summaryP3Raw = String(formData.get("summaryP3") ?? "").trim();
 
   const article = await db.article.update({
     where: { id: articleId },
@@ -169,6 +186,7 @@ export async function editArticleAction(
       title: String(formData.get("title") ?? ""),
       summaryP1: String(formData.get("summaryP1") ?? ""),
       summaryP2: String(formData.get("summaryP2") ?? ""),
+      summaryP3: summaryP3Raw || null,
       didYouKnow: String(formData.get("didYouKnow") ?? ""),
       perspective: String(formData.get("perspective") ?? ""),
       bullets: JSON.stringify(bullets),

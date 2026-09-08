@@ -75,6 +75,7 @@ export async function generateDraftForRegion(
       status: "DRAFT",
       summaryP1: draft.summaryP1,
       summaryP2: draft.summaryP2,
+      summaryP3: draft.summaryP3 ?? null,
       didYouKnow: draft.didYouKnow,
       perspective: draft.perspective,
       bullets: JSON.stringify(draft.bullets),

@@ -16,6 +16,7 @@ export type ArticleInput = {
   country?: string;
   summaryP1: string;
   summaryP2: string;
+  summaryP3?: string;
   didYouKnow: string;
   perspective: string;
   bullets: string[];

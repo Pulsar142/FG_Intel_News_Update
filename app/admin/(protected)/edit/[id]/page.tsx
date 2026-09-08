@@ -4,6 +4,7 @@ import { REGION_LABELS } from "@/lib/sources";
 import { EditForm } from "@/app/admin/(protected)/edit/EditForm";
 import { ImageForm } from "@/app/admin/(protected)/edit/ImageForm";
 import { RegenerateFieldForm } from "@/app/admin/(protected)/edit/RegenerateFieldForm";
+import { HidePerspectiveButton } from "@/app/admin/(protected)/edit/HidePerspectiveButton";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export default async function EditArticlePage({
@@ -37,6 +38,7 @@ export default async function EditArticlePage({
         title={article.title}
         summaryP1={article.summaryP1}
         summaryP2={article.summaryP2}
+        summaryP3={article.summaryP3 ?? ""}
         didYouKnow={article.didYouKnow}
         perspective={article.perspective}
         bullets={JSON.parse(article.bullets)}
@@ -51,6 +53,7 @@ export default async function EditArticlePage({
         </p>
         <RegenerateFieldForm articleId={article.id} field="didYouKnow" label="Did You Know?" />
         <RegenerateFieldForm articleId={article.id} field="perspective" label="Perspective" />
+        <HidePerspectiveButton articleId={article.id} hidden={article.perspectiveHidden} />
 
         {fieldRequests.length > 0 && (
           <div className="flex flex-col gap-1 border-t border-border pt-3">

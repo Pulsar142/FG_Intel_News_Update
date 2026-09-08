@@ -8,6 +8,7 @@ export function EditForm({
   title,
   summaryP1,
   summaryP2,
+  summaryP3,
   didYouKnow,
   perspective,
   bullets,
@@ -17,6 +18,7 @@ export function EditForm({
   title: string;
   summaryP1: string;
   summaryP2: string;
+  summaryP3: string;
   didYouKnow: string;
   perspective: string;
   bullets: string[];
@@ -49,6 +51,11 @@ export function EditForm({
       <label className="flex flex-col gap-2">
         <span className={label}>Summary — paragraph 2</span>
         <textarea name="summaryP2" defaultValue={summaryP2} rows={4} className={field} />
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Summary — paragraph 3 (optional, only if the story needs the extra depth)</span>
+        <textarea name="summaryP3" defaultValue={summaryP3} rows={4} className={field} />
       </label>
 
       <label className="flex flex-col gap-2">

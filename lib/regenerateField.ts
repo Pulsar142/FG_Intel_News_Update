@@ -37,7 +37,7 @@ export async function regenerateArticleField(params: {
   const fieldLabel = field === "didYouKnow" ? `"Did You Know?"` : `"Perspective"`;
   const styleNote =
     field === "didYouKnow"
-      ? "One paragraph with a genuinely interesting, verifiable detail related to the story. Never invent specifics not grounded in the article's summary below or well-established general knowledge about the equipment/topic it names."
+      ? "A meaty passage (2-4 sentences) going well beyond a single surface fact — include specific technical details, specs/numbers, historical context, or a comparison that deepens the reader's understanding. Never invent specifics not grounded in the article's summary below or well-established general knowledge about the equipment/topic it names."
       : `One analytical paragraph (or, for multi-national stories, multiple short named-perspective paragraphs separated by a blank line) written like a professional military intelligence analyst — measured, specific about operational/strategic implications. ${perspectiveInstruction(region)}`;
 
   const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin reviewing this article wants the ${fieldLabel} section rewritten to address a specific question or instruction of theirs.

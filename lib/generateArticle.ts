@@ -16,7 +16,17 @@ const ArticleGenSchema = z.object({
   title: z.string().describe("A punchy, specific headline for the briefing, matching the house style."),
   summaryP1: z.string().describe("First in-depth summary paragraph, grounded strictly in the provided source text."),
   summaryP2: z.string().describe("Second in-depth summary paragraph, continuing the analysis/context."),
-  didYouKnow: z.string().describe("One 'Did You Know?' paragraph with an interesting, factual detail related to the story."),
+  summaryP3: z
+    .string()
+    .nullable()
+    .describe(
+      "An optional third summary paragraph — only include it when the story genuinely has enough depth/context to warrant it (e.g. multiple developments, historical background, or several involved parties); null if two paragraphs already cover it well."
+    ),
+  didYouKnow: z
+    .string()
+    .describe(
+      "A meaty 'Did You Know?' passage (2-4 sentences) going well beyond a single surface fact — include specific technical details, specs/numbers, historical context, or a comparison that deepens the reader's understanding of the equipment/topic named in the story."
+    ),
   perspective: z.string().describe(
     "The house 'perspective' section: one analytical paragraph (or, for multi-national stories, multiple short named-perspective paragraphs separated by a blank line) written from a military analyst's point of view."
   ),
@@ -60,8 +70,8 @@ export async function generateArticleDraft(params: {
   const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing covering defence and military-technology developments (procurement, tensions, aircraft, weapons, air defence, radar, stealth, UAS/UAV, next-generation fighters, ISR, space, indigenous programmes, and sea-to-air threats) for Singapore, South-East Asia, the USA and the world.
 
 House style, per article:
-- An in-depth summary in exactly two paragraphs, grounded ONLY in the source text you are given. Do not invent facts, quotes, or figures not present in the source text.
-- One "Did You Know?" paragraph with a genuinely interesting, verifiable detail related to the story (drawn from the source text, or well-established general knowledge about the equipment/topic named in it — never invented specifics).
+- An in-depth summary in two paragraphs, or three when the story genuinely has enough depth (multiple developments, historical background, several involved parties) to warrant the extra room — grounded ONLY in the source text you are given. Do not invent facts, quotes, or figures not present in the source text. Don't pad to three paragraphs artificially; only do it when there's real substance for a third.
+- One "Did You Know?" passage (2-4 sentences) that goes beyond a single surface fact — bring in specific technical details, specs/numbers, historical context, or a comparison, drawn from the source text or well-established general knowledge about the equipment/topic named in it (never invented specifics).
 - One perspective section, written like a professional military intelligence analyst: measured, non-sensational, specific about operational/strategic implications. ${perspectiveInstruction(region)}
 - 3-5 short bullet points capturing the key facts, for a "quick brief" popup.
 - A punchy, specific headline (not clickbait).
@@ -112,6 +122,7 @@ Write the FIGHTER GROUP INTEL briefing article for this story, following the hou
     country,
     summaryP1: gen.summaryP1,
     summaryP2: gen.summaryP2,
+    summaryP3: gen.summaryP3 ?? undefined,
     didYouKnow: gen.didYouKnow,
     perspective: gen.perspective,
     bullets: gen.bullets,

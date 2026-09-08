@@ -36,8 +36,10 @@ model Article {
 
   summaryP1        String
   summaryP2        String
+  summaryP3        String? // optional third summary paragraph, for stories that need the extra depth
   didYouKnow       String
   perspective      String // "Singapore's Perspective" / "How it affects RSAF" (may contain multiple named perspectives)
+  perspectiveHidden Boolean @default(false) // admin can hide the Perspective section from the public article page
   bullets          String // JSON string array, 3-5 quick-brief bullets
   images           String // JSON array of {url, caption, sourceUrl}
   sources          String // JSON array of {name, url}
