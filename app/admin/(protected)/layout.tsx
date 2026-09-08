@@ -21,7 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           <Link href="/admin" className="flex items-baseline gap-2">
             <span className="stencil text-lg font-bold tracking-widest text-foreground">
-              Fighter Group Intel
+              Data Driven Combat Readiness
             </span>
             <span className="font-mono text-[10px] tracking-[0.25em] text-gold">/ COMMAND</span>
           </Link>
