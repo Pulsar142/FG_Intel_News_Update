@@ -5,12 +5,14 @@ import {
   getArticlesForWeek,
   getCurrentDigest,
   getEnabledRegions,
+  getFunFacts,
   getPublishedArticles,
 } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { RegionTabs } from "@/app/components/RegionTabs";
 import { ArchiveSidebar } from "@/app/components/ArchiveSidebar";
+import { MilitaryFunFacts } from "@/app/components/MilitaryFunFacts";
 import { ArticleCardView } from "@/app/components/ArticleCardView";
 import { WeeklyBriefing } from "@/app/components/WeeklyBriefing";
 
@@ -24,7 +26,11 @@ export default async function HomePage({
   const enabledRegions = await getEnabledRegions();
   const activeRegion = enabledRegions.includes(region as Region) ? (region as Region) : undefined;
 
-  const [digest, archiveTree] = await Promise.all([getCurrentDigest(), getArchiveTree()]);
+  const [digest, archiveTree, funFacts] = await Promise.all([
+    getCurrentDigest(),
+    getArchiveTree(),
+    getFunFacts(),
+  ]);
 
   let articles;
   if (week) {
@@ -44,7 +50,10 @@ export default async function HomePage({
         )}
 
         <div className="flex flex-col gap-6 lg:flex-row">
-          <ArchiveSidebar tree={archiveTree} activeWeek={week} />
+          <div className="flex flex-col gap-4 lg:shrink-0">
+            <MilitaryFunFacts facts={funFacts} />
+            <ArchiveSidebar tree={archiveTree} activeWeek={week} />
+          </div>
           <div className="flex-1 min-w-0">
             <RegionTabs regions={enabledRegions} active={activeRegion} />
 

@@ -126,3 +126,33 @@ model FieldRegenerationRequest {
 
   @@index([status])
 }
+
+// A single one-to-two-sentence military fact shown in the public "Military
+// Fun Facts" box, grounded in a real search-verified source where possible.
+model FunFact {
+  id         String   @id @default(cuid())
+  text       String
+  topic      String? // category or the admin's prompt, e.g. "stealth technology"
+  sourceName String?
+  sourceUrl  String?
+  active     Boolean  @default(true) // admin can pull one from public view without deleting it
+  createdBy  String   @default("bot") // "bot" | "admin"
+  createdAt  DateTime @default(now())
+
+  @@index([active])
+}
+
+// The "free workflow" equivalent for fun facts: an admin's topic/question,
+// queued instead of calling the Anthropic API. Picked up by the same
+// free-generation Routine, which researches and writes the fact itself.
+model FunFactRequest {
+  id          String                  @id @default(cuid())
+  topic       String? // admin's topic/question; blank = pick any topic
+  status      GenerationRequestStatus @default(PENDING)
+  factId      String?
+  note        String?
+  requestedAt DateTime                @default(now())
+  fulfilledAt DateTime?
+
+  @@index([status])
+}

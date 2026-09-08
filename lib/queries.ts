@@ -63,6 +63,14 @@ function toCard(a: {
   };
 }
 
+export async function getFunFacts(limit = 5) {
+  return db.funFact.findMany({
+    where: { active: true },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+}
+
 export async function getEnabledRegions(): Promise<Region[]> {
   const settings = await db.regionSetting.findMany();
   const disabled = new Set(settings.filter((s) => !s.enabled).map((s) => s.region));

@@ -7,6 +7,7 @@ import { generateDraftForRegion } from "@/lib/weeklyRun";
 import { publishArticle, refreshDigest } from "@/lib/publish";
 import { verifyImageUrl } from "@/lib/verifyImage";
 import { regenerateArticleField, type RegenerableField } from "@/lib/regenerateField";
+import { generateFunFact } from "@/lib/generateFunFact";
 import type { Region } from "@/generated/prisma/client";
 import type { ArticleImage } from "@/lib/types";
 import { nanoid } from "nanoid";
@@ -318,4 +319,73 @@ export async function requestFreeFieldRegenerationAction(
   await db.fieldRegenerationRequest.create({ data: { articleId, field, question } });
   revalidatePath(`/admin/edit/${articleId}`);
   return { ok: true };
+}
+
+/**
+ * Instant (paid) fun-fact generation — same modality as generateAction:
+ * admin optionally types a topic/question, Claude web-searches and confirms
+ * a real fact against it. Requires a funded ANTHROPIC_API_KEY.
+ */
+export async function generateFunFactAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const topic = String(formData.get("topic") ?? "").trim() || undefined;
+
+  let result;
+  try {
+    result = await generateFunFact(topic);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
+  if (!result) {
+    return { error: "Couldn't confirm a reliable fact for that topic — try a different one." };
+  }
+
+  await db.funFact.create({
+    data: {
+      text: result.text,
+      topic: result.topic,
+      sourceName: result.sourceName,
+      sourceUrl: result.sourceUrl,
+      createdBy: "admin",
+    },
+  });
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/**
+ * The "free workflow" path: queues the topic/question instead of calling the
+ * Anthropic API. Picked up by the hourly free-generation Routine, which
+ * researches and confirms the fact itself.
+ */
+export async function requestFreeFunFactAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const topic = String(formData.get("topic") ?? "").trim() || null;
+
+  await db.funFactRequest.create({ data: { topic } });
+  revalidatePath("/admin/generate");
+  return { ok: true };
+}
+
+export async function cancelFunFactRequestAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.funFactRequest.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+}
+
+/** Permanently removes a fun fact from the public box. */
+export async function deleteFunFactAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.funFact.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
 }
