@@ -8,7 +8,7 @@ export function SiteHeader({ role }: { role: Role | null }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="flex items-baseline gap-3">
           <span className="stencil text-xl font-bold tracking-widest text-foreground sm:text-2xl">
-            Fighter Group Intel
+            Data Driven Combat Readiness
           </span>
           <span className="hidden font-mono text-[10px] tracking-[0.25em] text-gold sm:inline">
             / NEWS UPDATE
