@@ -6,6 +6,7 @@ import {
   getCurrentDigest,
   getEnabledRegions,
   getPublishedFunFact,
+  getPublishedAircraftRecognition,
   getPublishedArticles,
 } from "@/lib/queries";
 import { getSession } from "@/lib/session";
@@ -13,6 +14,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { RegionTabs } from "@/app/components/RegionTabs";
 import { ArchiveSidebar } from "@/app/components/ArchiveSidebar";
 import { MilitaryFunFacts } from "@/app/components/MilitaryFunFacts";
+import { AircraftRecognition } from "@/app/components/AircraftRecognition";
 import { ArticleCardView } from "@/app/components/ArticleCardView";
 import { WeeklyBriefing } from "@/app/components/WeeklyBriefing";
 
@@ -26,10 +28,11 @@ export default async function HomePage({
   const enabledRegions = await getEnabledRegions();
   const activeRegion = enabledRegions.includes(region as Region) ? (region as Region) : undefined;
 
-  const [digest, archiveTree, funFact] = await Promise.all([
+  const [digest, archiveTree, funFact, aircraftCard] = await Promise.all([
     getCurrentDigest(),
     getArchiveTree(),
     getPublishedFunFact(),
+    getPublishedAircraftRecognition(),
   ]);
 
   let articles;
@@ -52,6 +55,7 @@ export default async function HomePage({
         <div className="flex flex-col gap-6 lg:flex-row">
           <div className="flex flex-col gap-4 lg:shrink-0">
             <MilitaryFunFacts fact={funFact} />
+            <AircraftRecognition card={aircraftCard} />
             <ArchiveSidebar tree={archiveTree} activeWeek={week} />
           </div>
           <div className="flex-1 min-w-0">

@@ -68,6 +68,11 @@ export async function getPublishedFunFact() {
   return db.funFact.findFirst({ where: { status: "PUBLISHED" } });
 }
 
+/** The single Aircraft Recognition card currently shown to viewers, or null if none is published. */
+export async function getPublishedAircraftRecognition() {
+  return db.aircraftRecognition.findFirst({ where: { status: "PUBLISHED" } });
+}
+
 export async function getEnabledRegions(): Promise<Region[]> {
   const settings = await db.regionSetting.findMany();
   const disabled = new Set(settings.filter((s) => !s.enabled).map((s) => s.region));

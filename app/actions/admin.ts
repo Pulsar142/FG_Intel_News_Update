@@ -9,6 +9,8 @@ import { verifyImageUrl } from "@/lib/verifyImage";
 import { regenerateArticleField, type RegenerableField } from "@/lib/regenerateField";
 import { generateFunFact } from "@/lib/generateFunFact";
 import { publishFunFact } from "@/lib/publishFunFact";
+import { generateAircraftRecognition } from "@/lib/generateAircraftRecognition";
+import { publishAircraftRecognition } from "@/lib/publishAircraftRecognition";
 import type { Region } from "@/generated/prisma/client";
 import type { ArticleImage } from "@/lib/types";
 import { nanoid } from "nanoid";
@@ -405,6 +407,100 @@ export async function unpublishFunFactAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
   await db.funFact.update({ where: { id }, data: { status: "ARCHIVED" } });
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+}
+
+/**
+ * Instant (paid) Aircraft Recognition generation — same modality as
+ * generateFunFactAction: admin optionally types a topic (an aircraft type,
+ * or blank for a random category), Claude web-searches, identifies a real
+ * aircraft, and verifies a real photo of it before it's saved. Requires a
+ * funded ANTHROPIC_API_KEY.
+ */
+export async function generateAircraftRecognitionAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const topic = String(formData.get("topic") ?? "").trim() || undefined;
+
+  let result;
+  try {
+    result = await generateAircraftRecognition(topic);
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
+  if (!result) {
+    return {
+      error: "Couldn't confirm a real aircraft with a verifiable photo for that topic — try a different one.",
+    };
+  }
+
+  await db.aircraftRecognition.create({
+    data: {
+      imageUrl: result.imageUrl,
+      imageSourceName: result.imageSourceName,
+      imageSourceUrl: result.imageSourceUrl,
+      aircraftName: result.aircraftName,
+      category: result.category,
+      operator: result.operator,
+      description: result.description,
+      createdBy: "admin",
+    },
+  });
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+/**
+ * The "free workflow" path: queues the topic instead of calling the
+ * Anthropic API. Picked up by the hourly free-generation Routine, which
+ * researches, identifies, and verifies the aircraft photo itself.
+ */
+export async function requestFreeAircraftRecognitionAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const topic = String(formData.get("topic") ?? "").trim() || null;
+
+  await db.aircraftRecognitionRequest.create({ data: { topic } });
+  revalidatePath("/admin/generate");
+  return { ok: true };
+}
+
+export async function cancelAircraftRecognitionRequestAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aircraftRecognitionRequest.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+}
+
+/** Permanently removes an Aircraft Recognition card — including the currently published one, if any. */
+export async function deleteAircraftRecognitionAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aircraftRecognition.delete({ where: { id } });
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+}
+
+/** Makes this the one Aircraft Recognition card shown to viewers, archiving whatever was published before it. */
+export async function publishAircraftRecognitionAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await publishAircraftRecognition(id);
+  revalidatePath("/admin/generate");
+  revalidatePath("/");
+}
+
+/** Pulls the currently published Aircraft Recognition card from public view without deleting it. */
+export async function unpublishAircraftRecognitionAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aircraftRecognition.update({ where: { id }, data: { status: "ARCHIVED" } });
   revalidatePath("/admin/generate");
   revalidatePath("/");
 }

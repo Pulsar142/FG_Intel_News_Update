@@ -26,6 +26,13 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+enum AircraftCategory {
+  FIGHTER_JET
+  HELICOPTER
+  UAV
+  COMMERCIAL_AIRLINER
+}
+
 model Article {
   id               String        @id @default(cuid())
   slug             String        @unique
@@ -155,6 +162,44 @@ model FunFactRequest {
   topic       String? // admin's topic/question; blank = pick any topic
   status      GenerationRequestStatus @default(PENDING)
   factId      String?
+  note        String?
+  requestedAt DateTime                @default(now())
+  fulfilledAt DateTime?
+
+  @@index([status])
+}
+
+// An "Aircraft Recognition" card: one real, verified photo of a military or
+// commercial aircraft operating in/around Asia, with an identification and a
+// one-to-two line description covering its distinguishing feature(s). Mirrors
+// FunFact's lifecycle exactly — DRAFT/PUBLISHED/ARCHIVED, only one card is
+// ever PUBLISHED (shown to viewers) at a time, enforced by
+// publishAircraftRecognition() plus a partial unique index.
+model AircraftRecognition {
+  id              String           @id @default(cuid())
+  imageUrl        String
+  imageSourceName String? // outlet/photographer credit for the photo
+  imageSourceUrl  String? // where the photo was found, for verification
+  aircraftName    String // e.g. "Lockheed Martin F-16C Fighting Falcon"
+  category        AircraftCategory
+  operator        String? // operating air force / airline / country, if known
+  description     String // 1-2 lines: identification + distinct feature
+  status          ArticleStatus    @default(DRAFT)
+  createdBy       String           @default("bot") // "bot" | "admin"
+  createdAt       DateTime         @default(now())
+
+  @@index([status])
+}
+
+// The "free workflow" equivalent for Aircraft Recognition: an admin's
+// requested aircraft/topic, queued instead of calling the Anthropic API.
+// Picked up by the same free-generation Routine, which finds and verifies a
+// real photo, identifies the aircraft, and writes the card itself.
+model AircraftRecognitionRequest {
+  id          String                  @id @default(cuid())
+  topic       String? // admin's requested aircraft/topic; blank = pick any
+  status      GenerationRequestStatus @default(PENDING)
+  cardId      String?
   note        String?
   requestedAt DateTime                @default(now())
   fulfilledAt DateTime?
