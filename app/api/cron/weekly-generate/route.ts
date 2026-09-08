@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { runWeeklyGeneration } from "@/lib/weeklyRun";
+import { clearFulfilledRequests } from "@/lib/clearFulfilledRequests";
 
 export const maxDuration = 300;
 
@@ -13,7 +14,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const results = await runWeeklyGeneration({ autoPublish: true });
-    return Response.json({ success: true, results });
+    const cleared = await clearFulfilledRequests();
+    return Response.json({ success: true, results, cleared });
   } catch (error) {
     return Response.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },

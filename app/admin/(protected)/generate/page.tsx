@@ -46,11 +46,11 @@ export default async function GeneratePage({
       <GenerateForm defaultRegion={region} defaultCountry={country} />
 
       {requests.length > 0 && (
-        <section className="mt-2">
-          <h2 className="stencil mb-2 text-sm tracking-widest text-foreground">
-            Free Generation Requests
-          </h2>
-          <div className="flex flex-col gap-2">
+        <details className="mt-2" open>
+          <summary className="stencil mb-2 cursor-pointer text-sm tracking-widest text-foreground">
+            Free Generation Requests ({requests.length})
+          </summary>
+          <div className="mt-2 flex flex-col gap-2">
             {requests.map((r) => (
               <div
                 key={r.id}
@@ -73,7 +73,7 @@ export default async function GeneratePage({
               </div>
             ))}
           </div>
-        </section>
+        </details>
       )}
 
       <hr className="my-2 border-border" />
@@ -81,11 +81,11 @@ export default async function GeneratePage({
       <FunFactForm />
 
       {funFactRequests.length > 0 && (
-        <section className="mt-2">
-          <h2 className="stencil mb-2 text-sm tracking-widest text-foreground">
-            Fun Fact Requests
-          </h2>
-          <div className="flex flex-col gap-2">
+        <details className="mt-2" open>
+          <summary className="stencil mb-2 cursor-pointer text-sm tracking-widest text-foreground">
+            Fun Fact Requests ({funFactRequests.length})
+          </summary>
+          <div className="mt-2 flex flex-col gap-2">
             {funFactRequests.map((r) => (
               <div
                 key={r.id}
@@ -107,7 +107,7 @@ export default async function GeneratePage({
               </div>
             ))}
           </div>
-        </section>
+        </details>
       )}
 
       {(() => {
