@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import type { Region } from "@/generated/prisma/client";
+import type { Region, AviationSafetyRegion } from "@/generated/prisma/client";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export type ArticleCard = {
@@ -71,6 +71,70 @@ export async function getPublishedFunFact() {
 /** The single Aircraft Recognition card currently shown to viewers, or null if none is published. */
 export async function getPublishedAircraftRecognition() {
   return db.aircraftRecognition.findFirst({ where: { status: "PUBLISHED" } });
+}
+
+export type AviationSafetyCard = {
+  id: string;
+  slug: string;
+  title: string;
+  region: AviationSafetyRegion;
+  country: string | null;
+  incidentCategory: string;
+  incidentDate: Date | null;
+  weekOf: Date;
+  publishedAt: Date | null;
+  reliabilityScore: number;
+  teaser: string;
+  image: ArticleImage | null;
+};
+
+function toAviationSafetyCard(a: {
+  id: string;
+  slug: string;
+  title: string;
+  region: AviationSafetyRegion;
+  country: string | null;
+  incidentCategory: string;
+  incidentDate: Date | null;
+  weekOf: Date;
+  publishedAt: Date | null;
+  reliabilityScore: number;
+  summaryP1: string;
+  images: string;
+}): AviationSafetyCard {
+  return {
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    region: a.region,
+    country: a.country,
+    incidentCategory: a.incidentCategory,
+    incidentDate: a.incidentDate,
+    weekOf: a.weekOf,
+    publishedAt: a.publishedAt,
+    reliabilityScore: a.reliabilityScore,
+    teaser: a.summaryP1.slice(0, 160) + (a.summaryP1.length > 160 ? "…" : ""),
+    image: firstImage(a.images),
+  };
+}
+
+/** Published Aviation Safety briefings, most recent first, optionally filtered by region. */
+export async function getPublishedAviationSafetyArticles(region?: AviationSafetyRegion): Promise<AviationSafetyCard[]> {
+  const rows = await db.aviationSafetyArticle.findMany({
+    where: { status: "PUBLISHED", ...(region ? { region } : {}) },
+    orderBy: { publishedAt: "desc" },
+  });
+  return rows.map(toAviationSafetyCard);
+}
+
+export async function getAviationSafetyArticleBySlug(slug: string) {
+  const row = await db.aviationSafetyArticle.findUnique({ where: { slug } });
+  if (!row) return null;
+  return {
+    ...row,
+    images: JSON.parse(row.images) as ArticleImage[],
+    sources: JSON.parse(row.sources) as ArticleSource[],
+  };
 }
 
 export async function getEnabledRegions(): Promise<Region[]> {

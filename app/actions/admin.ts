@@ -11,7 +11,10 @@ import { generateFunFact } from "@/lib/generateFunFact";
 import { publishFunFact } from "@/lib/publishFunFact";
 import { generateAircraftRecognition } from "@/lib/generateAircraftRecognition";
 import { publishAircraftRecognition } from "@/lib/publishAircraftRecognition";
-import type { Region } from "@/generated/prisma/client";
+import { generateAviationSafetyArticle, aviationSlug } from "@/lib/generateAviationSafety";
+import { mondayOf } from "@/lib/weeks";
+import { getMonth, getYear } from "date-fns";
+import type { Region, AviationSafetyRegion } from "@/generated/prisma/client";
 import type { ArticleImage } from "@/lib/types";
 import { nanoid } from "nanoid";
 
@@ -503,4 +506,112 @@ export async function unpublishAircraftRecognitionAction(formData: FormData) {
   await db.aircraftRecognition.update({ where: { id }, data: { status: "ARCHIVED" } });
   revalidatePath("/admin/generate");
   revalidatePath("/");
+}
+
+/**
+ * Instant (paid) Aviation Safety generation — same modality as generateAction:
+ * admin picks a region (Asia/Global/Custom + country), Claude web-searches,
+ * verifies a real incident against a reliable source, and writes the full
+ * briefing (summary, Safety Analysis, Preventative Measures, HFACS). Lands as
+ * a DRAFT for review, exactly like news articles — never auto-published.
+ * Requires a funded ANTHROPIC_API_KEY.
+ */
+export async function generateAviationSafetyAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const region = String(formData.get("region") ?? "") as AviationSafetyRegion;
+  const country = String(formData.get("country") ?? "").trim() || undefined;
+  if (region === "CUSTOM" && !country) {
+    return { error: "Enter a country for a Custom-region briefing." };
+  }
+
+  let result;
+  try {
+    result = await generateAviationSafetyArticle({ region, country });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : String(e) };
+  }
+  if (!result) {
+    return { error: "Couldn't confirm a real, verifiable incident for that scope — try again." };
+  }
+
+  const weekOf = mondayOf(new Date());
+  await db.aviationSafetyArticle.create({
+    data: {
+      slug: aviationSlug(result.title, weekOf),
+      title: result.title,
+      region,
+      country: region === "CUSTOM" ? country : null,
+      incidentCategory: result.incidentCategory,
+      incidentDate: result.incidentDate,
+      aircraftInfo: result.aircraftInfo,
+      summaryP1: result.summaryP1,
+      summaryP2: result.summaryP2,
+      summaryP3: result.summaryP3,
+      safetyAnalysis: result.safetyAnalysis,
+      preventativeMeasures: result.preventativeMeasures,
+      hfacsAnalysis: result.hfacsAnalysis,
+      images: JSON.stringify(result.images),
+      sources: JSON.stringify(result.sources),
+      reliabilityScore: result.reliabilityScore,
+      weekOf,
+      month: getMonth(weekOf) + 1,
+      year: getYear(weekOf),
+      createdBy: "admin",
+    },
+  });
+  revalidatePath("/admin/aviation-safety");
+  return { ok: true };
+}
+
+/** The "free workflow" path: queues the region/country instead of calling the Anthropic API. */
+export async function requestFreeAviationSafetyAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const region = String(formData.get("region") ?? "") as AviationSafetyRegion;
+  const country = String(formData.get("country") ?? "").trim() || undefined;
+  if (region === "CUSTOM" && !country) {
+    return { error: "Enter a country for a Custom-region request." };
+  }
+
+  await db.aviationSafetyRequest.create({ data: { region, country: region === "CUSTOM" ? country : null } });
+  revalidatePath("/admin/aviation-safety");
+  return { ok: true };
+}
+
+export async function cancelAviationSafetyRequestAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aviationSafetyRequest.delete({ where: { id } });
+  revalidatePath("/admin/aviation-safety");
+}
+
+/** Publishes an Aviation Safety briefing — unlike Fun Facts/Aircraft Recognition, many can be published at once. */
+export async function publishAviationSafetyAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aviationSafetyArticle.update({ where: { id }, data: { status: "PUBLISHED", publishedAt: new Date() } });
+  revalidatePath("/admin/aviation-safety");
+  revalidatePath("/aviation-safety");
+}
+
+export async function archiveAviationSafetyAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aviationSafetyArticle.update({ where: { id }, data: { status: "ARCHIVED" } });
+  revalidatePath("/admin/aviation-safety");
+  revalidatePath("/aviation-safety");
+}
+
+/** Permanently removes an Aviation Safety briefing (any status). */
+export async function deleteAviationSafetyAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.aviationSafetyArticle.delete({ where: { id } });
+  revalidatePath("/admin/aviation-safety");
+  revalidatePath("/aviation-safety");
 }

@@ -15,6 +15,12 @@ export function SiteHeader({ role }: { role: Role | null }) {
           </span>
         </Link>
         <nav className="flex items-center gap-3 font-mono text-xs">
+          <Link
+            href="/aviation-safety"
+            className="rounded border border-danger/60 px-3 py-1.5 text-danger hover:bg-danger hover:text-background transition-colors"
+          >
+            Aviation Safety
+          </Link>
           {role === "admin" && (
             <Link
               href="/admin"

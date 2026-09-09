@@ -206,3 +206,66 @@ model AircraftRecognitionRequest {
 
   @@index([status])
 }
+
+enum AviationSafetyRegion {
+  ASIA
+  GLOBAL
+  CUSTOM
+}
+
+// A grounded aviation-safety incident briefing for aviation personnel, scoped to ICAO
+// Safety Management System (SMS) doctrine: three summary paragraphs, a source-linked
+// image, a "Safety Analysis" (5-Why root-cause chain + fishbone/Ishikawa breakdown), a
+// "Preventative Measures" paragraph, and — only when human error is a genuine
+// contributing factor — an HFACS categorisation. Reuses ArticleStatus's DRAFT/PUBLISHED/
+// ARCHIVED lifecycle; unlike FunFact/AircraftRecognition, many rows can be PUBLISHED at
+// once — this behaves like Article (a growing, archived list), not a single-card widget.
+model AviationSafetyArticle {
+  id                   String               @id @default(cuid())
+  slug                 String               @unique
+  title                String
+  region               AviationSafetyRegion
+  country              String? // set when region = CUSTOM
+  status               ArticleStatus        @default(DRAFT)
+
+  incidentCategory     String // e.g. "runway incursion / close proximity", "CFIT", "G-LOC", "airspace infringement"
+  incidentDate         DateTime? // the event's own date — distinct from weekOf/publishedAt
+  aircraftInfo         String? // aircraft type/operator involved, if applicable/known
+
+  summaryP1            String
+  summaryP2            String
+  summaryP3            String
+  safetyAnalysis       String // 5-Why root-cause chain + fishbone (Man/Machine/Method/Material/Environment/Management)
+  preventativeMeasures String
+  hfacsAnalysis        String? // HFACS categorisation of human-error contributing factors; null when not a human-factors event
+
+  images               String // JSON: ArticleImage[]
+  sources              String // JSON: {name,url}[]
+  reliabilityScore     Int    @default(1)
+
+  weekOf      DateTime
+  month       Int
+  year        Int
+  generatedAt DateTime  @default(now())
+  publishedAt DateTime?
+  createdBy   String    @default("bot") // "bot" | "admin"
+
+  @@index([status])
+  @@index([weekOf])
+}
+
+// The "free workflow" equivalent for Aviation Safety: an admin's requested
+// region/country, queued instead of calling the Anthropic API. Picked up by
+// the hourly free-generation Routine, mirroring GenerationRequest.
+model AviationSafetyRequest {
+  id          String                  @id @default(cuid())
+  region      AviationSafetyRegion
+  country     String? // set when region = CUSTOM
+  status      GenerationRequestStatus @default(PENDING)
+  articleId   String?
+  note        String?
+  requestedAt DateTime                @default(now())
+  fulfilledAt DateTime?
+
+  @@index([status])
+}
