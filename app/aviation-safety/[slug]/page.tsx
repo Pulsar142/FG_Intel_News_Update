@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getAviationSafetyArticleBySlug } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
+import { QuickBrief } from "@/app/components/QuickBrief";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { AVIATION_SAFETY_REGION_LABELS } from "@/lib/aviationSafety";
 import { format } from "date-fns";
@@ -33,6 +34,7 @@ export default async function AviationSafetyArticlePage({
         </h1>
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <ReliabilityBadge score={article.reliabilityScore} />
+          <QuickBrief bullets={article.bullets} />
           {article.aircraftInfo && (
             <span className="font-mono text-[10px] text-muted">{article.aircraftInfo}</span>
           )}

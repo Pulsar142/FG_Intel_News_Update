@@ -134,7 +134,13 @@ export async function getAviationSafetyArticleBySlug(slug: string) {
     ...row,
     images: JSON.parse(row.images) as ArticleImage[],
     sources: JSON.parse(row.sources) as ArticleSource[],
+    bullets: JSON.parse(row.bullets) as string[],
   };
+}
+
+/** The Aviation Safety page's latest auto-generated monthly catchphrase + trend highlight, if one exists. */
+export async function getLatestAviationSafetyBrief() {
+  return db.aviationSafetyBrief.findFirst({ orderBy: [{ year: "desc" }, { month: "desc" }] });
 }
 
 export async function getEnabledRegions(): Promise<Region[]> {

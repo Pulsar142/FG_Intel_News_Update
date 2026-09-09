@@ -37,6 +37,7 @@ export default async function EditAviationSafetyPage({
         safetyAnalysis={article.safetyAnalysis}
         preventativeMeasures={article.preventativeMeasures}
         hfacsAnalysis={article.hfacsAnalysis ?? ""}
+        bullets={(JSON.parse(article.bullets) as string[]).join("\n")}
         sources={sources.map((s) => `${s.name} | ${s.url}`).join("\n")}
       />
     </div>

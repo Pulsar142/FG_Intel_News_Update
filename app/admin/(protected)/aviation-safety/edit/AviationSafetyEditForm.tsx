@@ -15,6 +15,7 @@ export function AviationSafetyEditForm({
   safetyAnalysis,
   preventativeMeasures,
   hfacsAnalysis,
+  bullets,
   sources,
 }: {
   id: string;
@@ -28,6 +29,7 @@ export function AviationSafetyEditForm({
   safetyAnalysis: string;
   preventativeMeasures: string;
   hfacsAnalysis: string;
+  bullets: string;
   sources: string;
 }) {
   const [state, formAction, pending] = useActionState(editAviationSafetyAction, undefined);
@@ -88,6 +90,11 @@ export function AviationSafetyEditForm({
       <label className="flex flex-col gap-2">
         <span className={label}>HFACS categorisation (leave blank if human error isn&apos;t a genuine factor)</span>
         <textarea name="hfacsAnalysis" defaultValue={hfacsAnalysis} rows={5} className={field} />
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Quick Brief bullets (one per line, 5 — summary + Safety Analysis)</span>
+        <textarea name="bullets" defaultValue={bullets} rows={6} className={field} />
       </label>
 
       <label className="flex flex-col gap-2">

@@ -553,6 +553,7 @@ export async function generateAviationSafetyAction(
       safetyAnalysis: result.safetyAnalysis,
       preventativeMeasures: result.preventativeMeasures,
       hfacsAnalysis: result.hfacsAnalysis,
+      bullets: JSON.stringify(result.bullets),
       images: JSON.stringify(result.images),
       sources: JSON.stringify(result.sources),
       reliabilityScore: result.reliabilityScore,
@@ -645,6 +646,10 @@ export async function editAviationSafetyAction(
   if (sources.length === 0) {
     return { error: "Add at least one source as \"Name | https://url\" (one per line)." };
   }
+  const bullets = String(formData.get("bullets") ?? "")
+    .split("\n")
+    .map((b) => b.trim())
+    .filter(Boolean);
 
   const article = await db.aviationSafetyArticle.update({
     where: { id },
@@ -659,6 +664,7 @@ export async function editAviationSafetyAction(
       safetyAnalysis: String(formData.get("safetyAnalysis") ?? ""),
       preventativeMeasures: String(formData.get("preventativeMeasures") ?? ""),
       hfacsAnalysis: hfacsAnalysisRaw || null,
+      bullets: JSON.stringify(bullets),
       sources: JSON.stringify(sources),
     },
   });

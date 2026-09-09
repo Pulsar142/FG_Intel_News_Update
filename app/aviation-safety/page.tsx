@@ -1,4 +1,4 @@
-import { getPublishedAviationSafetyArticles } from "@/lib/queries";
+import { getPublishedAviationSafetyArticles, getLatestAviationSafetyBrief } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { AviationSafetyRegionTabs } from "@/app/components/AviationSafetyRegionTabs";
@@ -12,7 +12,10 @@ export default async function AviationSafetyPage({
 }) {
   const { region } = await searchParams;
   const activeRegion = region === "ASIA" || region === "GLOBAL" ? (region as AviationSafetyRegion) : undefined;
-  const articles = await getPublishedAviationSafetyArticles(activeRegion);
+  const [articles, brief] = await Promise.all([
+    getPublishedAviationSafetyArticles(activeRegion),
+    getLatestAviationSafetyBrief(),
+  ]);
 
   return (
     <>
@@ -20,12 +23,19 @@ export default async function AviationSafetyPage({
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6">
         <div>
           <h1 className="stencil text-2xl text-foreground">Aviation Safety</h1>
-          <p className="mt-2 max-w-3xl font-mono text-xs text-muted">
-            Grounded incident briefings for aviation personnel, scoped to ICAO Safety Management
-            System (SMS) doctrine — each with a 5-Why / fishbone Safety Analysis, concrete
-            Preventative Measures, and an HFACS categorisation where human factors genuinely
-            apply. Never sensationalized, never fabricated.
-          </p>
+          {brief ? (
+            <>
+              <p className="mt-2 max-w-3xl font-mono text-xs italic text-gold">{brief.catchphrase}</p>
+              <p className="mt-1 max-w-3xl font-mono text-xs text-muted">{brief.trendHighlight}</p>
+            </>
+          ) : (
+            <p className="mt-2 max-w-3xl font-mono text-xs text-muted">
+              Grounded incident briefings for aviation personnel, scoped to ICAO Safety Management
+              System (SMS) doctrine — each with a 5-Why / fishbone Safety Analysis, concrete
+              Preventative Measures, and an HFACS categorisation where human factors genuinely
+              apply. Never sensationalized, never fabricated.
+            </p>
+          )}
         </div>
 
         <AviationSafetyRegionTabs active={activeRegion} />

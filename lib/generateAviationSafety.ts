@@ -41,7 +41,7 @@ const AviationSafetyGenSchema = z.object({
     .string()
     .nullable()
     .describe(
-      "The 'Safety Analysis' section: a 5-Why root-cause chain (label each step 'Why 1:' through 'Why 5:') followed by a fishbone/Ishikawa cause-and-effect breakdown across Man, Machine, Method, Material, Environment, and Management categories (only list categories with a real, grounded contributing factor — do not force all six). Every claim must be grounded in the reported facts or well-established aviation safety analysis practice — never invented specifics."
+      "The 'Safety Analysis' section, with three labeled subsections in this order: (1) '5-Why Analysis' — a root-cause chain labeled 'Why 1:' through 'Why 5:'; (2) 'Fishbone (Ishikawa) Breakdown' — cause-and-effect categories across Man, Machine, Method, Material, Environment, and Management (only list categories with a real, grounded contributing factor — do not force all six); (3) '5M4L Model' — the 5Ms (Man, Machine, Medium, Mission, Management) as the operational domains examined, crossed with the 4Ls (Individual, Team, Unit Management, Organizational Management) as the human-factors levels at which contributing factors originated — only note a 5M x 4L cell where the reporting genuinely supports it, never force full coverage. Every claim in all three subsections must be grounded in the reported facts or well-established aviation safety analysis practice — never invented specifics."
     ),
   preventativeMeasures: z
     .string()
@@ -52,6 +52,11 @@ const AviationSafetyGenSchema = z.object({
     .nullable()
     .describe(
       "HFACS (Human Factors Analysis and Classification System) categorisation of human-error contributing factors, organized by HFACS level (Unsafe Acts; Preconditions for Unsafe Acts; Unsafe Supervision; Organizational Influences) with the specific applicable subcategories named. Set this to null (not a guess) if human error is not a genuine, reported contributing factor for this event — e.g. a pure mechanical failure or weather event with no crew/ATC/maintenance factor."
+    ),
+  bullets: z
+    .array(z.string())
+    .describe(
+      "Exactly 5 bullet points for a 'Quick Brief' popup: a total distillation of the news summary and the Safety Analysis together (mix of what happened and why/what to take away) — each bullet a single short, punchy sentence."
     ),
   imageCandidates: z
     .array(
@@ -103,6 +108,7 @@ export async function generateAviationSafetyArticle(params: {
   safetyAnalysis: string;
   preventativeMeasures: string;
   hfacsAnalysis: string | null;
+  bullets: string[];
   images: ArticleImage[];
   sources: ArticleSource[];
   reliabilityScore: number;
@@ -113,6 +119,11 @@ export async function generateAviationSafetyArticle(params: {
   const system = `You are, at once, a military research analyst, an aviation safety analyst and accident investigator, and a safety advocate, writing for "FIGHTER GROUP INTEL / NEWS UPDATE"'s "Aviation Safety" section — content directed at aviation personnel (aircrew, maintainers, ATC, safety officers).
 
 Scope your work using ICAO Safety Management System (SMS) doctrine (Annex 19): the goal of every briefing is safety risk management and safety promotion — identifying hazards and contributing factors from a real event, and turning them into concrete, actionable lessons, never sensationalism or blame.
+
+For the Safety Analysis section, in addition to the existing 5-Why and fishbone/Ishikawa methods, incorporate the 5M4L model:
+- The 5Ms (operational domains): Man (the operator's physical/mental capabilities, training, fatigue, actions), Machine (equipment, technical performance, instruments, hardware design), Medium (environment: weather, lighting, terrain, operational setting), Mission (task objectives, planning, requirements, operational goals), Management (organizational policies, supervision, safety culture, risk controls).
+- The 4Ls (human-factors levels, HFACS-derived): Individual (specific actions/errors/states of single operators), Team (coordination/communication/interaction between crew members), Unit Management (local supervision, scheduling, direct operational leadership), Organizational Management (high-level corporate policies, resource allocation, safety culture).
+Use the 5M4L model to show, for each grounded contributing factor, which operational domain (M) it falls under and which human-factors level (L) it originated at.
 
 Topics in scope: ${AVIATION_SAFETY_TOPICS.join("; ")}.
 
@@ -149,7 +160,8 @@ Rules:
     !gen.summaryP2 ||
     !gen.summaryP3 ||
     !gen.safetyAnalysis ||
-    !gen.preventativeMeasures
+    !gen.preventativeMeasures ||
+    gen.bullets.length < 3
   ) {
     return null;
   }
@@ -175,6 +187,7 @@ Rules:
     safetyAnalysis: gen.safetyAnalysis,
     preventativeMeasures: gen.preventativeMeasures,
     hfacsAnalysis: gen.hfacsAnalysis,
+    bullets: gen.bullets,
     images: [{ url: imageUrl, caption: "Image related to this incident.", sourceUrl: imageSourceUrl }],
     sources: gen.sources,
     reliabilityScore: 1 + gen.corroboratingSourceCount,

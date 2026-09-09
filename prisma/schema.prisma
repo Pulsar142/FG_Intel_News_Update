@@ -235,9 +235,10 @@ model AviationSafetyArticle {
   summaryP1            String
   summaryP2            String
   summaryP3            String
-  safetyAnalysis       String // 5-Why root-cause chain + fishbone (Man/Machine/Method/Material/Environment/Management)
+  safetyAnalysis       String // 5-Why root-cause chain + fishbone (Man/Machine/Method/Material/Environment/Management) + 5M4L breakdown
   preventativeMeasures String
   hfacsAnalysis        String? // HFACS categorisation of human-error contributing factors; null when not a human-factors event
+  bullets              String @default("[]") // JSON: string[] — 5-point Quick Brief covering the summary and the safety analysis
 
   images               String // JSON: ArticleImage[]
   sources              String // JSON: {name,url}[]
@@ -268,4 +269,19 @@ model AviationSafetyRequest {
   fulfilledAt DateTime?
 
   @@index([status])
+}
+
+// The Aviation Safety section's page header: a short catchphrase plus a
+// grounded, web-search-verified highlight of a trend observed in aviation
+// safety news over the past month. Auto-generated at the start of each
+// calendar month (one row per month/year); the page displays the latest.
+model AviationSafetyBrief {
+  id             String   @id @default(cuid())
+  month          Int
+  year           Int
+  catchphrase    String
+  trendHighlight String
+  generatedAt    DateTime @default(now())
+
+  @@unique([month, year])
 }
