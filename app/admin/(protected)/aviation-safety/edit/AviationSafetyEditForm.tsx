@@ -15,6 +15,7 @@ export function AviationSafetyEditForm({
   safetyAnalysis,
   preventativeMeasures,
   hfacsAnalysis,
+  sources,
 }: {
   id: string;
   title: string;
@@ -27,6 +28,7 @@ export function AviationSafetyEditForm({
   safetyAnalysis: string;
   preventativeMeasures: string;
   hfacsAnalysis: string;
+  sources: string;
 }) {
   const [state, formAction, pending] = useActionState(editAviationSafetyAction, undefined);
 
@@ -86,6 +88,17 @@ export function AviationSafetyEditForm({
       <label className="flex flex-col gap-2">
         <span className={label}>HFACS categorisation (leave blank if human error isn&apos;t a genuine factor)</span>
         <textarea name="hfacsAnalysis" defaultValue={hfacsAnalysis} rows={5} className={field} />
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Sources &amp; links — one per line, as &quot;Name | https://url&quot;</span>
+        <textarea
+          name="sources"
+          defaultValue={sources}
+          rows={5}
+          placeholder={"NTSB Preliminary Report | https://ntsb.gov/...\nThe Aviation Herald | https://avherald.com/..."}
+          className={field}
+        />
       </label>
 
       {state?.error && <p className="font-mono text-sm text-danger">{state.error}</p>}

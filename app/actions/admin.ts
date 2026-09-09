@@ -15,7 +15,7 @@ import { generateAviationSafetyArticle, aviationSlug } from "@/lib/generateAviat
 import { mondayOf } from "@/lib/weeks";
 import { getMonth, getYear } from "date-fns";
 import type { Region, AviationSafetyRegion } from "@/generated/prisma/client";
-import type { ArticleImage } from "@/lib/types";
+import type { ArticleImage, ArticleSource } from "@/lib/types";
 import { nanoid } from "nanoid";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -616,6 +616,20 @@ export async function deleteAviationSafetyAction(formData: FormData) {
   revalidatePath("/aviation-safety");
 }
 
+/** Parses a "Name | URL" per-line textarea into ArticleSource[], dropping lines without a URL. */
+function parseSourcesText(text: string): ArticleSource[] {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const idx = line.indexOf("|");
+      if (idx === -1) return { name: line, url: "" };
+      return { name: line.slice(0, idx).trim(), url: line.slice(idx + 1).trim() };
+    })
+    .filter((s) => s.url);
+}
+
 /** Hand-edits an Aviation Safety briefing's content — any status, mirroring editArticleAction. */
 export async function editAviationSafetyAction(
   _state: AdminActionState,
@@ -627,6 +641,10 @@ export async function editAviationSafetyAction(
   const incidentDate = incidentDateRaw ? new Date(`${incidentDateRaw}T00:00:00.000Z`) : null;
   const aircraftInfoRaw = String(formData.get("aircraftInfo") ?? "").trim();
   const hfacsAnalysisRaw = String(formData.get("hfacsAnalysis") ?? "").trim();
+  const sources = parseSourcesText(String(formData.get("sources") ?? ""));
+  if (sources.length === 0) {
+    return { error: "Add at least one source as \"Name | https://url\" (one per line)." };
+  }
 
   const article = await db.aviationSafetyArticle.update({
     where: { id },
@@ -641,10 +659,65 @@ export async function editAviationSafetyAction(
       safetyAnalysis: String(formData.get("safetyAnalysis") ?? ""),
       preventativeMeasures: String(formData.get("preventativeMeasures") ?? ""),
       hfacsAnalysis: hfacsAnalysisRaw || null,
+      sources: JSON.stringify(sources),
     },
   });
   revalidatePath("/admin/aviation-safety");
   revalidatePath(`/admin/aviation-safety/edit/${article.id}`);
+  revalidatePath("/aviation-safety");
+  revalidatePath(`/aviation-safety/${article.slug}`);
+  return { ok: true };
+}
+
+/**
+ * Lets an admin manually add/replace an Aviation Safety briefing's image —
+ * either uploading a file saved from a source link, or pasting a URL
+ * (verified before it's accepted) — for cases the generation pipeline
+ * couldn't extract or verify one itself. Mirrors replaceArticleImageAction.
+ */
+export async function replaceAviationSafetyImageAction(
+  _state: ImageActionState,
+  formData: FormData
+): Promise<ImageActionState> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const caption = String(formData.get("caption") ?? "").trim();
+  const pastedUrl = String(formData.get("imageUrl") ?? "").trim();
+  const file = formData.get("image");
+
+  const article = await db.aviationSafetyArticle.findUniqueOrThrow({ where: { id } });
+  const existing = JSON.parse(article.images) as ArticleImage[];
+  const existingSourceUrl = existing[0]?.sourceUrl ?? "";
+
+  let url: string;
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return { error: `Image is too large — max ${Math.round(MAX_UPLOAD_BYTES / 1024 / 1024)}MB.` };
+    }
+    if (!file.type.startsWith("image/")) {
+      return { error: "That file isn't an image." };
+    }
+    const buf = Buffer.from(await file.arrayBuffer());
+    url = `data:${file.type};base64,${buf.toString("base64")}`;
+  } else if (pastedUrl) {
+    const ok = await verifyImageUrl(pastedUrl);
+    if (!ok) {
+      return {
+        error:
+          "That image URL didn't resolve to a real, usable image — try saving it from the article and uploading the file instead.",
+      };
+    }
+    url = pastedUrl;
+  } else {
+    return { error: "Choose a file to upload, or paste an image URL." };
+  }
+
+  const images: ArticleImage[] = [
+    { url, caption: caption || "Uploaded by admin.", sourceUrl: existingSourceUrl },
+  ];
+  await db.aviationSafetyArticle.update({ where: { id }, data: { images: JSON.stringify(images) } });
+  revalidatePath("/admin/aviation-safety");
+  revalidatePath(`/admin/aviation-safety/edit/${id}`);
   revalidatePath("/aviation-safety");
   revalidatePath(`/aviation-safety/${article.slug}`);
   return { ok: true };

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { AVIATION_SAFETY_REGION_LABELS } from "@/lib/aviationSafety";
 import { AviationSafetyEditForm } from "@/app/admin/(protected)/aviation-safety/edit/AviationSafetyEditForm";
+import { AviationSafetyImageForm } from "@/app/admin/(protected)/aviation-safety/edit/AviationSafetyImageForm";
+import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export default async function EditAviationSafetyPage({
   params,
@@ -12,6 +14,9 @@ export default async function EditAviationSafetyPage({
   const article = await db.aviationSafetyArticle.findUnique({ where: { id } });
   if (!article) notFound();
 
+  const images = JSON.parse(article.images) as ArticleImage[];
+  const sources = JSON.parse(article.sources) as ArticleSource[];
+
   return (
     <div className="flex flex-col gap-4">
       <h1 className="stencil text-xl text-foreground">Edit Aviation Safety Briefing</h1>
@@ -19,6 +24,7 @@ export default async function EditAviationSafetyPage({
         {AVIATION_SAFETY_REGION_LABELS[article.region]}
         {article.country ? ` · ${article.country}` : ""} — {article.status}
       </p>
+      <AviationSafetyImageForm id={article.id} image={images[0] ?? null} sources={sources} />
       <AviationSafetyEditForm
         id={article.id}
         title={article.title}
@@ -31,6 +37,7 @@ export default async function EditAviationSafetyPage({
         safetyAnalysis={article.safetyAnalysis}
         preventativeMeasures={article.preventativeMeasures}
         hfacsAnalysis={article.hfacsAnalysis ?? ""}
+        sources={sources.map((s) => `${s.name} | ${s.url}`).join("\n")}
       />
     </div>
   );
