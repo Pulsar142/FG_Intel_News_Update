@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { db } from "@/lib/db";
 import { AviationSafetyForm } from "@/app/admin/(protected)/aviation-safety/AviationSafetyForm";
 import { AVIATION_SAFETY_REGION_LABELS } from "@/lib/aviationSafety";
@@ -126,6 +127,12 @@ export default async function AviationSafetyAdminPage() {
                 a={a}
                 actions={
                   <>
+                    <Link
+                      href={`/admin/aviation-safety/edit/${a.id}`}
+                      className="rounded border border-border px-3 py-1.5 text-foreground hover:border-accent transition-colors"
+                    >
+                      Edit
+                    </Link>
                     <form action={publishAviationSafetyAction}>
                       <input type="hidden" name="id" value={a.id} />
                       <button className="rounded bg-accent px-3 py-1.5 font-semibold text-background hover:bg-accent-strong transition-colors">
@@ -158,6 +165,12 @@ export default async function AviationSafetyAdminPage() {
                 a={a}
                 actions={
                   <>
+                    <Link
+                      href={`/admin/aviation-safety/edit/${a.id}`}
+                      className="rounded border border-border px-3 py-1.5 text-foreground hover:border-accent transition-colors"
+                    >
+                      Edit
+                    </Link>
                     <form action={archiveAviationSafetyAction}>
                       <input type="hidden" name="id" value={a.id} />
                       <button className="rounded border border-border px-3 py-1.5 text-muted hover:border-gold hover:text-gold transition-colors">
@@ -190,6 +203,12 @@ export default async function AviationSafetyAdminPage() {
                 a={a}
                 actions={
                   <>
+                    <Link
+                      href={`/admin/aviation-safety/edit/${a.id}`}
+                      className="rounded border border-border px-3 py-1.5 text-foreground hover:border-accent transition-colors"
+                    >
+                      Edit
+                    </Link>
                     <form action={publishAviationSafetyAction}>
                       <input type="hidden" name="id" value={a.id} />
                       <button className="rounded border border-gold px-3 py-1.5 text-gold hover:bg-gold hover:text-background transition-colors">

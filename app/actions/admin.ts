@@ -615,3 +615,37 @@ export async function deleteAviationSafetyAction(formData: FormData) {
   revalidatePath("/admin/aviation-safety");
   revalidatePath("/aviation-safety");
 }
+
+/** Hand-edits an Aviation Safety briefing's content — any status, mirroring editArticleAction. */
+export async function editAviationSafetyAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const incidentDateRaw = String(formData.get("incidentDate") ?? "").trim();
+  const incidentDate = incidentDateRaw ? new Date(`${incidentDateRaw}T00:00:00.000Z`) : null;
+  const aircraftInfoRaw = String(formData.get("aircraftInfo") ?? "").trim();
+  const hfacsAnalysisRaw = String(formData.get("hfacsAnalysis") ?? "").trim();
+
+  const article = await db.aviationSafetyArticle.update({
+    where: { id },
+    data: {
+      title: String(formData.get("title") ?? ""),
+      incidentCategory: String(formData.get("incidentCategory") ?? ""),
+      incidentDate,
+      aircraftInfo: aircraftInfoRaw || null,
+      summaryP1: String(formData.get("summaryP1") ?? ""),
+      summaryP2: String(formData.get("summaryP2") ?? ""),
+      summaryP3: String(formData.get("summaryP3") ?? ""),
+      safetyAnalysis: String(formData.get("safetyAnalysis") ?? ""),
+      preventativeMeasures: String(formData.get("preventativeMeasures") ?? ""),
+      hfacsAnalysis: hfacsAnalysisRaw || null,
+    },
+  });
+  revalidatePath("/admin/aviation-safety");
+  revalidatePath(`/admin/aviation-safety/edit/${article.id}`);
+  revalidatePath("/aviation-safety");
+  revalidatePath(`/aviation-safety/${article.slug}`);
+  return { ok: true };
+}
