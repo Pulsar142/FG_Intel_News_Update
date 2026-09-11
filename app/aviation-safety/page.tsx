@@ -53,28 +53,34 @@ export default async function AviationSafetyPage({
           )}
         </div>
 
-        <AviationSafetyTrendChart
-          data={briefHistory.map((b) => ({
-            month: b.month,
-            year: b.year,
-            militaryIncidentCount: b.militaryIncidentCount,
-            commercialIncidentCount: b.commercialIncidentCount,
-          }))}
-        />
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <div className="order-2 min-w-0 flex-1 lg:order-1">
+            <AviationSafetyRegionTabs active={activeRegion} />
 
-        <AviationSafetyRegionTabs active={activeRegion} />
-
-        {articles.length === 0 ? (
-          <p className="mt-8 text-center text-muted font-mono text-sm">
-            No Aviation Safety briefings to show yet.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((a) => (
-              <AviationSafetyCardView key={a.id} article={a} />
-            ))}
+            {articles.length === 0 ? (
+              <p className="mt-8 text-center text-muted font-mono text-sm">
+                No Aviation Safety briefings to show yet.
+              </p>
+            ) : (
+              <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {articles.map((a) => (
+                  <AviationSafetyCardView key={a.id} article={a} />
+                ))}
+              </div>
+            )}
           </div>
-        )}
+
+          <aside className="order-1 shrink-0 lg:sticky lg:top-20 lg:order-2 lg:w-72">
+            <AviationSafetyTrendChart
+              data={briefHistory.map((b) => ({
+                month: b.month,
+                year: b.year,
+                militaryIncidentCount: b.militaryIncidentCount,
+                commercialIncidentCount: b.commercialIncidentCount,
+              }))}
+            />
+          </aside>
+        </div>
       </main>
       <footer className="border-t border-border px-4 py-4 text-center font-mono text-[10px] text-muted">
         KNOWLEDGE BEFORE CONFLICT — open-source intelligence, not an official government publication.
