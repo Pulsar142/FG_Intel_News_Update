@@ -289,8 +289,10 @@ model AviationSafetyBrief {
   year                     Int
   catchphrase              String
   militaryTrendHighlight   String
+  militaryTrendTag         String @default("") // 3-6 word summary of the trend, for the chart tooltip
   militaryIncidentCount    Int
   commercialTrendHighlight String
+  commercialTrendTag       String @default("") // 3-6 word summary of the trend, for the chart tooltip
   commercialIncidentCount  Int
   generatedAt              DateTime @default(now())
 

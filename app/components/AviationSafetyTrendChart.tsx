@@ -6,7 +6,9 @@ type BriefPoint = {
   month: number;
   year: number;
   militaryIncidentCount: number;
+  militaryTrendTag: string;
   commercialIncidentCount: number;
+  commercialTrendTag: string;
 };
 
 const MILITARY_COLOR = "#3987e5";
@@ -217,22 +219,28 @@ export function AviationSafetyTrendChart({ data }: { data: BriefPoint[] }) {
             </svg>
 
             {hovered && (
-              <div className="pointer-events-none absolute right-1 top-1 rounded border border-border bg-background/95 px-2 py-1.5 font-mono text-[9px]">
-                <p className="mb-0.5 text-muted">
+              <div className="pointer-events-none absolute right-1 top-1 w-40 rounded border border-border bg-background/95 px-2 py-1.5 font-mono text-[9px] shadow-lg">
+                <p className="mb-1 text-muted">
                   {MONTH_ABBR[hovered.month - 1]} {hovered.year}
                 </p>
-                <p className="flex items-center gap-1 text-foreground">
-                  <svg width="8" height="3" aria-hidden="true">
-                    <line x1="0" y1="1.5" x2="8" y2="1.5" stroke={MILITARY_COLOR} strokeWidth="2" />
-                  </svg>
-                  Mil: <span className="font-semibold">{hovered.militaryIncidentCount}</span>
-                </p>
-                <p className="flex items-center gap-1 text-foreground">
-                  <svg width="8" height="3" aria-hidden="true">
-                    <line x1="0" y1="1.5" x2="8" y2="1.5" stroke={COMMERCIAL_COLOR} strokeWidth="2" />
-                  </svg>
-                  Comm: <span className="font-semibold">{hovered.commercialIncidentCount}</span>
-                </p>
+                <div className="mb-1">
+                  <p className="flex items-center gap-1 text-foreground">
+                    <svg width="8" height="3" aria-hidden="true" className="shrink-0">
+                      <line x1="0" y1="1.5" x2="8" y2="1.5" stroke={MILITARY_COLOR} strokeWidth="2" />
+                    </svg>
+                    Mil: <span className="font-semibold">{hovered.militaryIncidentCount}</span>
+                  </p>
+                  {hovered.militaryTrendTag && <p className="pl-3 leading-snug text-muted">{hovered.militaryTrendTag}</p>}
+                </div>
+                <div>
+                  <p className="flex items-center gap-1 text-foreground">
+                    <svg width="8" height="3" aria-hidden="true" className="shrink-0">
+                      <line x1="0" y1="1.5" x2="8" y2="1.5" stroke={COMMERCIAL_COLOR} strokeWidth="2" />
+                    </svg>
+                    Comm: <span className="font-semibold">{hovered.commercialIncidentCount}</span>
+                  </p>
+                  {hovered.commercialTrendTag && <p className="pl-3 leading-snug text-muted">{hovered.commercialTrendTag}</p>}
+                </div>
               </div>
             )}
           </div>

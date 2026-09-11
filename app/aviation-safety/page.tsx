@@ -76,7 +76,9 @@ export default async function AviationSafetyPage({
                 month: b.month,
                 year: b.year,
                 militaryIncidentCount: b.militaryIncidentCount,
+                militaryTrendTag: b.militaryTrendTag,
                 commercialIncidentCount: b.commercialIncidentCount,
+                commercialTrendTag: b.commercialTrendTag,
               }))}
             />
           </aside>

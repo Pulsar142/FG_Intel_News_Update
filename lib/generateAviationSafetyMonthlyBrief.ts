@@ -16,6 +16,11 @@ const MonthlyBriefSchema = z.object({
     .describe(
       "One to two sentences highlighting a genuine trend observed specifically in MILITARY aviation safety news over the past month (e.g. a recurring incident category, a repeated contributing factor, a notable service/regulatory response) — grounded strictly in real reporting from the past month. If reporting was too sparse to identify a real pattern, say so plainly rather than inventing one."
     ),
+  militaryTrendTag: z
+    .string()
+    .describe(
+      "A 3-6 word summary of the militaryTrendHighlight above, for a chart tooltip — e.g. 'Rising Class A mishap rate' or 'Runway excursions cluster'. Must reflect the same grounded trend, just condensed."
+    ),
   militaryIncidentCount: z
     .number()
     .int()
@@ -27,6 +32,11 @@ const MonthlyBriefSchema = z.object({
     .string()
     .describe(
       "One to two sentences highlighting a genuine trend observed specifically in COMMERCIAL/civil aviation safety news over the past month — same grounding rules as the military highlight."
+    ),
+  commercialTrendTag: z
+    .string()
+    .describe(
+      "A 3-6 word summary of the commercialTrendHighlight above, for a chart tooltip — e.g. 'Runway excursions cluster'. Must reflect the same grounded trend, just condensed."
     ),
   commercialIncidentCount: z
     .number()
@@ -49,8 +59,10 @@ const MonthlyBriefSchema = z.object({
 export async function generateAviationSafetyMonthlyBrief(): Promise<{
   catchphrase: string;
   militaryTrendHighlight: string;
+  militaryTrendTag: string;
   militaryIncidentCount: number;
   commercialTrendHighlight: string;
+  commercialTrendTag: string;
   commercialIncidentCount: number;
 } | null> {
   const client = new Anthropic();
@@ -92,7 +104,9 @@ Rules:
     !gen.found ||
     !gen.catchphrase ||
     !gen.militaryTrendHighlight ||
+    !gen.militaryTrendTag ||
     !gen.commercialTrendHighlight ||
+    !gen.commercialTrendTag ||
     gen.militaryIncidentCount == null ||
     gen.commercialIncidentCount == null
   ) {
@@ -102,8 +116,10 @@ Rules:
   return {
     catchphrase: gen.catchphrase,
     militaryTrendHighlight: gen.militaryTrendHighlight,
+    militaryTrendTag: gen.militaryTrendTag,
     militaryIncidentCount: gen.militaryIncidentCount,
     commercialTrendHighlight: gen.commercialTrendHighlight,
+    commercialTrendTag: gen.commercialTrendTag,
     commercialIncidentCount: gen.commercialIncidentCount,
   };
 }
