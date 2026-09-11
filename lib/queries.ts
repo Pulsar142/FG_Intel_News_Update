@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import type { Region, AviationSafetyRegion } from "@/generated/prisma/client";
+import type { Region, AviationSafetyRegion, AviationSafetySector } from "@/generated/prisma/client";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export type ArticleCard = {
@@ -80,6 +80,7 @@ export type AviationSafetyCard = {
   region: AviationSafetyRegion;
   country: string | null;
   incidentCategory: string;
+  sector: AviationSafetySector;
   incidentDate: Date | null;
   weekOf: Date;
   publishedAt: Date | null;
@@ -95,6 +96,7 @@ function toAviationSafetyCard(a: {
   region: AviationSafetyRegion;
   country: string | null;
   incidentCategory: string;
+  sector: AviationSafetySector;
   incidentDate: Date | null;
   weekOf: Date;
   publishedAt: Date | null;
@@ -109,6 +111,7 @@ function toAviationSafetyCard(a: {
     region: a.region,
     country: a.country,
     incidentCategory: a.incidentCategory,
+    sector: a.sector,
     incidentDate: a.incidentDate,
     weekOf: a.weekOf,
     publishedAt: a.publishedAt,
@@ -138,9 +141,14 @@ export async function getAviationSafetyArticleBySlug(slug: string) {
   };
 }
 
-/** The Aviation Safety page's latest auto-generated monthly catchphrase + trend highlight, if one exists. */
+/** The Aviation Safety page's latest auto-generated monthly catchphrase + trend highlights, if one exists. */
 export async function getLatestAviationSafetyBrief() {
   return db.aviationSafetyBrief.findFirst({ orderBy: [{ year: "desc" }, { month: "desc" }] });
+}
+
+/** Every monthly brief, oldest first — the Military vs Commercial trend chart's data series. */
+export async function getAviationSafetyBriefHistory() {
+  return db.aviationSafetyBrief.findMany({ orderBy: [{ year: "asc" }, { month: "asc" }] });
 }
 
 export async function getEnabledRegions(): Promise<Region[]> {

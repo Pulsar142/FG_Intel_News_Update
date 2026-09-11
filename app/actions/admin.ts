@@ -545,6 +545,7 @@ export async function generateAviationSafetyAction(
       region,
       country: region === "CUSTOM" ? country : null,
       incidentCategory: result.incidentCategory,
+      sector: result.sector,
       incidentDate: result.incidentDate,
       aircraftInfo: result.aircraftInfo,
       summaryP1: result.summaryP1,
@@ -656,6 +657,7 @@ export async function editAviationSafetyAction(
     data: {
       title: String(formData.get("title") ?? ""),
       incidentCategory: String(formData.get("incidentCategory") ?? ""),
+      sector: String(formData.get("sector")) === "MILITARY" ? "MILITARY" : "COMMERCIAL",
       incidentDate,
       aircraftInfo: aircraftInfoRaw || null,
       summaryP1: String(formData.get("summaryP1") ?? ""),

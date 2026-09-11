@@ -1,8 +1,13 @@
-import { getPublishedAviationSafetyArticles, getLatestAviationSafetyBrief } from "@/lib/queries";
+import {
+  getPublishedAviationSafetyArticles,
+  getLatestAviationSafetyBrief,
+  getAviationSafetyBriefHistory,
+} from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { AviationSafetyRegionTabs } from "@/app/components/AviationSafetyRegionTabs";
 import { AviationSafetyCardView } from "@/app/components/AviationSafetyCardView";
+import { AviationSafetyTrendChart } from "@/app/components/AviationSafetyTrendChart";
 import type { AviationSafetyRegion } from "@/generated/prisma/client";
 
 export default async function AviationSafetyPage({
@@ -12,9 +17,10 @@ export default async function AviationSafetyPage({
 }) {
   const { region } = await searchParams;
   const activeRegion = region === "ASIA" || region === "GLOBAL" ? (region as AviationSafetyRegion) : undefined;
-  const [articles, brief] = await Promise.all([
+  const [articles, brief, briefHistory] = await Promise.all([
     getPublishedAviationSafetyArticles(activeRegion),
     getLatestAviationSafetyBrief(),
+    getAviationSafetyBriefHistory(),
   ]);
 
   return (
@@ -26,7 +32,16 @@ export default async function AviationSafetyPage({
           {brief ? (
             <>
               <p className="mt-2 max-w-3xl font-mono text-xs italic text-gold">{brief.catchphrase}</p>
-              <p className="mt-1 max-w-3xl font-mono text-xs text-muted">{brief.trendHighlight}</p>
+              <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <p className="max-w-xl font-mono text-xs text-muted">
+                  <span className="stencil text-[10px] tracking-widest text-[#3987e5]">Military — </span>
+                  {brief.militaryTrendHighlight}
+                </p>
+                <p className="max-w-xl font-mono text-xs text-muted">
+                  <span className="stencil text-[10px] tracking-widest text-[#d95926]">Commercial — </span>
+                  {brief.commercialTrendHighlight}
+                </p>
+              </div>
             </>
           ) : (
             <p className="mt-2 max-w-3xl font-mono text-xs text-muted">
@@ -37,6 +52,15 @@ export default async function AviationSafetyPage({
             </p>
           )}
         </div>
+
+        <AviationSafetyTrendChart
+          data={briefHistory.map((b) => ({
+            month: b.month,
+            year: b.year,
+            militaryIncidentCount: b.militaryIncidentCount,
+            commercialIncidentCount: b.commercialIncidentCount,
+          }))}
+        />
 
         <AviationSafetyRegionTabs active={activeRegion} />
 

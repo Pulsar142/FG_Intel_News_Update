@@ -24,7 +24,15 @@ export function AviationSafetyCardView({ article }: { article: AviationSafetyCar
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-danger">{article.incidentCategory}</p>
+        <div className="flex items-center gap-2">
+          <span
+            className="font-mono text-[9px] font-semibold uppercase tracking-widest"
+            style={{ color: article.sector === "MILITARY" ? "#3987e5" : "#d95926" }}
+          >
+            {article.sector === "MILITARY" ? "Military" : "Commercial"}
+          </span>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-danger">{article.incidentCategory}</p>
+        </div>
         <h3 className="stencil text-base leading-tight text-foreground group-hover:text-accent-strong">
           {article.title}
         </h3>

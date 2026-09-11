@@ -32,6 +32,12 @@ const AviationSafetyGenSchema = z.object({
     .describe(
       "Which topic this incident falls under, e.g. 'close proximity / near-miss', 'CFIT', 'G-LOC', 'airspace infringement', 'in-flight structural failure', 'weather-related accident'."
     ),
+  sector: z
+    .enum(["MILITARY", "COMMERCIAL"])
+    .nullable()
+    .describe(
+      "MILITARY if the incident involves a military-operated aircraft/air force; COMMERCIAL for any non-military (airline, cargo, general/civil aviation) incident."
+    ),
   incidentDate: z.string().nullable().describe("ISO date (YYYY-MM-DD) the incident actually occurred, or null if unknown."),
   aircraftInfo: z.string().nullable().describe("Aircraft type and operator involved, if applicable/known."),
   summaryP1: z.string().nullable().describe("First summary paragraph: what happened, grounded strictly in the source reporting."),
@@ -100,6 +106,7 @@ export async function generateAviationSafetyArticle(params: {
 }): Promise<{
   title: string;
   incidentCategory: string;
+  sector: "MILITARY" | "COMMERCIAL";
   incidentDate: Date | null;
   aircraftInfo: string | null;
   summaryP1: string;
@@ -156,6 +163,7 @@ Rules:
     !gen.found ||
     !gen.title ||
     !gen.incidentCategory ||
+    !gen.sector ||
     !gen.summaryP1 ||
     !gen.summaryP2 ||
     !gen.summaryP3 ||
@@ -179,6 +187,7 @@ Rules:
   return {
     title: gen.title,
     incidentCategory: gen.incidentCategory,
+    sector: gen.sector,
     incidentDate: gen.incidentDate ? new Date(`${gen.incidentDate}T00:00:00.000Z`) : null,
     aircraftInfo: gen.aircraftInfo,
     summaryP1: gen.summaryP1,

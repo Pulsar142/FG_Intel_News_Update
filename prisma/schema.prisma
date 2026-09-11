@@ -213,6 +213,11 @@ enum AviationSafetyRegion {
   CUSTOM
 }
 
+enum AviationSafetySector {
+  MILITARY
+  COMMERCIAL
+}
+
 // A grounded aviation-safety incident briefing for aviation personnel, scoped to ICAO
 // Safety Management System (SMS) doctrine: three summary paragraphs, a source-linked
 // image, a "Safety Analysis" (5-Why root-cause chain + fishbone/Ishikawa breakdown), a
@@ -227,6 +232,7 @@ model AviationSafetyArticle {
   region               AviationSafetyRegion
   country              String? // set when region = CUSTOM
   status               ArticleStatus        @default(DRAFT)
+  sector               AviationSafetySector // military aviation vs commercial/civil aviation, for the trend chart split
 
   incidentCategory     String // e.g. "runway incursion / close proximity", "CFIT", "G-LOC", "airspace infringement"
   incidentDate         DateTime? // the event's own date — distinct from weekOf/publishedAt
@@ -272,16 +278,21 @@ model AviationSafetyRequest {
 }
 
 // The Aviation Safety section's page header: a short catchphrase plus a
-// grounded, web-search-verified highlight of a trend observed in aviation
-// safety news over the past month. Auto-generated at the start of each
-// calendar month (one row per month/year); the page displays the latest.
+// grounded, web-search-verified highlight of the Military and Commercial
+// aviation safety trends observed over the past month, each paired with a
+// count of the distinct real incidents found for that sector (the chart's
+// data points). Auto-generated at the start of each calendar month (one row
+// per month/year); the page displays the latest and charts the full history.
 model AviationSafetyBrief {
-  id             String   @id @default(cuid())
-  month          Int
-  year           Int
-  catchphrase    String
-  trendHighlight String
-  generatedAt    DateTime @default(now())
+  id                       String   @id @default(cuid())
+  month                    Int
+  year                     Int
+  catchphrase              String
+  militaryTrendHighlight   String
+  militaryIncidentCount    Int
+  commercialTrendHighlight String
+  commercialIncidentCount  Int
+  generatedAt              DateTime @default(now())
 
   @@unique([month, year])
 }

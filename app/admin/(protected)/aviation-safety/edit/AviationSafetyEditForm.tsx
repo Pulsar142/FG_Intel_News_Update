@@ -7,6 +7,7 @@ export function AviationSafetyEditForm({
   id,
   title,
   incidentCategory,
+  sector,
   incidentDate,
   aircraftInfo,
   summaryP1,
@@ -21,6 +22,7 @@ export function AviationSafetyEditForm({
   id: string;
   title: string;
   incidentCategory: string;
+  sector: string;
   incidentDate: string;
   aircraftInfo: string;
   summaryP1: string;
@@ -61,6 +63,14 @@ export function AviationSafetyEditForm({
           <input name="aircraftInfo" defaultValue={aircraftInfo} className={field} />
         </label>
       </div>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Sector (drives the Military/Commercial trend chart)</span>
+        <select name="sector" defaultValue={sector} className={field}>
+          <option value="MILITARY">Military</option>
+          <option value="COMMERCIAL">Commercial</option>
+        </select>
+      </label>
 
       <label className="flex flex-col gap-2">
         <span className={label}>Summary — paragraph 1</span>

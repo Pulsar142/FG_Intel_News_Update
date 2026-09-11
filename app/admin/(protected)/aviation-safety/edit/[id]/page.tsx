@@ -29,6 +29,7 @@ export default async function EditAviationSafetyPage({
         id={article.id}
         title={article.title}
         incidentCategory={article.incidentCategory}
+        sector={article.sector}
         incidentDate={article.incidentDate?.toISOString().slice(0, 10) ?? ""}
         aircraftInfo={article.aircraftInfo ?? ""}
         summaryP1={article.summaryP1}
