@@ -127,14 +127,11 @@ export function RegionalKnowledgeMap({
           {geojson && (
             <GeoJSON
               data={geojson}
+              interactive={false}
               style={(feature?: Feature) => {
                 const name = feature?.properties?.name as string | undefined;
                 const color = (name && COUNTRY_COLORS[name]) || DEFAULT_BORDER;
                 return { color, weight: 2, fillColor: color, fillOpacity: 0.08 };
-              }}
-              onEachFeature={(feature, layer) => {
-                const name = feature?.properties?.name as string | undefined;
-                if (name) layer.bindTooltip(name, { sticky: true, className: "rk-tooltip" });
               }}
             />
           )}
@@ -152,7 +149,7 @@ export function RegionalKnowledgeMap({
                     Runway: {fmtFt(a.runwayLengthFt)}
                   </span>
                 </Tooltip>
-                <Popup maxWidth={300}>
+                <Popup maxWidth={300} maxHeight={340}>
                   <div className="flex flex-col gap-1.5 font-mono text-xs">
                     <p className="text-[10px] uppercase tracking-widest text-muted">
                       {a.country} — {a.baseType === "CIVIL_MILITARY_SHARED" ? "Civil/Military Shared" : "Military"}
