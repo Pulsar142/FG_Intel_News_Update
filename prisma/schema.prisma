@@ -334,6 +334,10 @@ model MilitaryAirbase {
   icaoCode    String?
   baseType    AirbaseType   @default(MILITARY)
   description String // 1-3 sentences: role of the base, general context
+  runwayLengthFt Int? // longest runway's length, in feet
+  runwayWidthFt  Int? // that runway's width, in feet
+  elevationFt    Int? // field elevation, in feet
+  runwayCount    Int? // number of runways available
   sources     String // JSON: {name,url}[]
   status      ArticleStatus @default(DRAFT)
   createdBy   String        @default("bot") // "bot" | "admin"

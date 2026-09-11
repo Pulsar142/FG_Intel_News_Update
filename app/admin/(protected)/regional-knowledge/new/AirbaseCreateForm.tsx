@@ -56,6 +56,29 @@ export function AirbaseCreateForm() {
         </select>
       </label>
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runway length (ft)</span>
+          <input name="runwayLengthFt" type="number" className={field} />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runway width (ft)</span>
+          <input name="runwayWidthFt" type="number" className={field} />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className={label}>Elevation (ft)</span>
+          <input name="elevationFt" type="number" className={field} />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runways available</span>
+          <input name="runwayCount" type="number" className={field} />
+        </label>
+      </div>
+      <p className="-mt-2 font-mono text-[10px] text-muted">
+        Leave any of these blank if not publicly confirmed — the site will show &quot;Not publicly
+        reported&quot; rather than guessing.
+      </p>
+
       <label className="flex flex-col gap-2">
         <span className={label}>Description</span>
         <textarea name="description" rows={3} required className={field} />

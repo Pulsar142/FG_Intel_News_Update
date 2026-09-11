@@ -2,7 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 import { useMemo, useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { Feature } from "geojson";
 import { AIRBASE_UNIT_CATEGORY_LABELS, hasFlyingUnit } from "@/lib/regionalKnowledge";
@@ -29,9 +29,18 @@ export type AirbaseMapData = {
   icaoCode: string | null;
   baseType: "MILITARY" | "CIVIL_MILITARY_SHARED";
   description: string;
+  runwayLengthFt: number | null;
+  runwayWidthFt: number | null;
+  elevationFt: number | null;
+  runwayCount: number | null;
   sources: string;
   units: AirbaseUnitData[];
 };
+
+const NOT_REPORTED = "Not publicly reported";
+function fmtFt(v: number | null): string {
+  return v === null ? NOT_REPORTED : `${v.toLocaleString()} ft`;
+}
 
 // Fixed categorical hues, one per focus country (validated CVD-safe order).
 const COUNTRY_COLORS: Record<string, string> = {
@@ -136,7 +145,14 @@ export function RegionalKnowledgeMap({
             const sources = JSON.parse(a.sources) as ArticleSource[];
             return (
               <Marker key={a.id} position={[a.latitude, a.longitude]} icon={airbaseIcon(flying ? FLYING_MARKER_COLOR : GROUND_MARKER_COLOR)}>
-                <Popup maxWidth={280}>
+                <Tooltip direction="top" offset={[0, -9]} opacity={0.95}>
+                  <span className="font-mono text-xs">
+                    <strong>{a.name}</strong>
+                    <br />
+                    Runway: {fmtFt(a.runwayLengthFt)}
+                  </span>
+                </Tooltip>
+                <Popup maxWidth={300}>
                   <div className="flex flex-col gap-1.5 font-mono text-xs">
                     <p className="text-[10px] uppercase tracking-widest text-muted">
                       {a.country} — {a.baseType === "CIVIL_MILITARY_SHARED" ? "Civil/Military Shared" : "Military"}
@@ -144,6 +160,20 @@ export function RegionalKnowledgeMap({
                     <p className="text-sm font-semibold">{a.name}</p>
                     <p className="text-muted">{a.operator}</p>
                     <p>{a.description}</p>
+
+                    <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t border-black/10 pt-1 text-[10px]">
+                      <span className="text-muted">ICAO</span>
+                      <span>{a.icaoCode ?? NOT_REPORTED}</span>
+                      <span className="text-muted">Runway L × W</span>
+                      <span>
+                        {fmtFt(a.runwayLengthFt)} × {a.runwayWidthFt === null ? NOT_REPORTED : `${a.runwayWidthFt.toLocaleString()} ft`}
+                      </span>
+                      <span className="text-muted">Elevation</span>
+                      <span>{a.elevationFt === null ? NOT_REPORTED : `${a.elevationFt.toLocaleString()} ft`}</span>
+                      <span className="text-muted">Runways available</span>
+                      <span>{a.runwayCount ?? NOT_REPORTED}</span>
+                    </div>
+
                     <div className="mt-1 flex flex-col gap-1 border-t border-black/10 pt-1">
                       {a.units.map((u) => (
                         <div key={u.id}>
@@ -151,9 +181,10 @@ export function RegionalKnowledgeMap({
                             {AIRBASE_UNIT_CATEGORY_LABELS[u.category]}
                           </p>
                           <p className="font-semibold">
-                            {u.unitName}
-                            {u.aircraftType ? ` — ${u.aircraftType}` : ""}
-                            {u.approxCount ? ` (~${u.approxCount})` : ""}
+                            {u.unitName} — {u.aircraftType ?? NOT_REPORTED}
+                            {" ("}
+                            {u.approxCount ? `~${u.approxCount}` : NOT_REPORTED}
+                            {")"}
                           </p>
                           {u.notes && <p className="text-muted">{u.notes}</p>}
                         </div>

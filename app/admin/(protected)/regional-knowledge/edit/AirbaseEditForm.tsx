@@ -14,6 +14,10 @@ export function AirbaseEditForm({
   icaoCode,
   baseType,
   description,
+  runwayLengthFt,
+  runwayWidthFt,
+  elevationFt,
+  runwayCount,
   sources,
 }: {
   id: string;
@@ -25,6 +29,10 @@ export function AirbaseEditForm({
   icaoCode: string;
   baseType: string;
   description: string;
+  runwayLengthFt: number | null;
+  runwayWidthFt: number | null;
+  elevationFt: number | null;
+  runwayCount: number | null;
   sources: string;
 }) {
   const [state, formAction, pending] = useActionState(editAirbaseAction, undefined);
@@ -79,6 +87,29 @@ export function AirbaseEditForm({
           <option value="CIVIL_MILITARY_SHARED">Civil/Military Shared</option>
         </select>
       </label>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runway length (ft)</span>
+          <input name="runwayLengthFt" type="number" defaultValue={runwayLengthFt ?? ""} className={field} />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runway width (ft)</span>
+          <input name="runwayWidthFt" type="number" defaultValue={runwayWidthFt ?? ""} className={field} />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className={label}>Elevation (ft)</span>
+          <input name="elevationFt" type="number" defaultValue={elevationFt ?? ""} className={field} />
+        </label>
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runways available</span>
+          <input name="runwayCount" type="number" defaultValue={runwayCount ?? ""} className={field} />
+        </label>
+      </div>
+      <p className="-mt-2 font-mono text-[10px] text-muted">
+        Leave any of these blank if not publicly confirmed — the site will show &quot;Not publicly
+        reported&quot; rather than guessing.
+      </p>
 
       <label className="flex flex-col gap-2">
         <span className={label}>Description</span>

@@ -634,6 +634,14 @@ function parseSourcesText(text: string): ArticleSource[] {
     .filter((s) => s.url);
 }
 
+/** Parses a nullable numeric form field — blank means "not publicly reported," not zero. */
+function parseOptionalInt(value: FormDataEntryValue | null): number | null {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return null;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? Math.round(n) : null;
+}
+
 /** Hand-edits an Aviation Safety briefing's content — any status, mirroring editArticleAction. */
 export async function editAviationSafetyAction(
   _state: AdminActionState,
@@ -764,6 +772,10 @@ export async function createAirbaseAction(
       icaoCode: String(formData.get("icaoCode") ?? "").trim() || null,
       baseType: (String(formData.get("baseType") ?? "MILITARY") as AirbaseType) || "MILITARY",
       description: String(formData.get("description") ?? "").trim(),
+      runwayLengthFt: parseOptionalInt(formData.get("runwayLengthFt")),
+      runwayWidthFt: parseOptionalInt(formData.get("runwayWidthFt")),
+      elevationFt: parseOptionalInt(formData.get("elevationFt")),
+      runwayCount: parseOptionalInt(formData.get("runwayCount")),
       sources: JSON.stringify(sources),
       createdBy: "admin",
     },
@@ -804,6 +816,10 @@ export async function editAirbaseAction(
       icaoCode: icaoCode || null,
       baseType: (String(formData.get("baseType") ?? "MILITARY") as AirbaseType) || "MILITARY",
       description: String(formData.get("description") ?? "").trim(),
+      runwayLengthFt: parseOptionalInt(formData.get("runwayLengthFt")),
+      runwayWidthFt: parseOptionalInt(formData.get("runwayWidthFt")),
+      elevationFt: parseOptionalInt(formData.get("elevationFt")),
+      runwayCount: parseOptionalInt(formData.get("runwayCount")),
       sources: JSON.stringify(sources),
     },
   });

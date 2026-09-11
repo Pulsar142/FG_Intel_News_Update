@@ -30,6 +30,10 @@ export default async function RegionalKnowledgePage() {
     icaoCode: a.icaoCode,
     baseType: a.baseType,
     description: a.description,
+    runwayLengthFt: a.runwayLengthFt,
+    runwayWidthFt: a.runwayWidthFt,
+    elevationFt: a.elevationFt,
+    runwayCount: a.runwayCount,
     sources: a.sources,
     units: a.units.map((u) => ({
       id: u.id,
