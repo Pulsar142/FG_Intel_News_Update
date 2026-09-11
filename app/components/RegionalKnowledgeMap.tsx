@@ -29,6 +29,7 @@ export type AirbaseMapData = {
   icaoCode: string | null;
   baseType: "MILITARY" | "CIVIL_MILITARY_SHARED";
   description: string;
+  runwayDesignator: string | null;
   runwayLengthFt: number | null;
   runwayWidthFt: number | null;
   elevationFt: number | null;
@@ -40,6 +41,15 @@ export type AirbaseMapData = {
 const NOT_REPORTED = "Not publicly reported";
 function fmtFt(v: number | null): string {
   return v === null ? NOT_REPORTED : `${v.toLocaleString()} ft`;
+}
+
+// e.g. "Runway 18/36: 8,530 ft x 148 ft" — falls back gracefully as designator/width are missing.
+function runwaySummary(a: AirbaseMapData): string {
+  const label = a.runwayDesignator ? `Runway ${a.runwayDesignator}` : "Runway";
+  if (a.runwayLengthFt === null) return `${label}: ${NOT_REPORTED}`;
+  const length = `${a.runwayLengthFt.toLocaleString()} ft`;
+  const width = a.runwayWidthFt === null ? NOT_REPORTED : `${a.runwayWidthFt.toLocaleString()} ft`;
+  return `${label}: ${length} x ${width}`;
 }
 
 // Fixed categorical hues, one per focus country (validated CVD-safe order).
@@ -146,7 +156,7 @@ export function RegionalKnowledgeMap({
                   <span className="font-mono text-xs">
                     <strong>{a.name}</strong>
                     <br />
-                    Runway: {fmtFt(a.runwayLengthFt)}
+                    {runwaySummary(a)}
                   </span>
                 </Tooltip>
                 <Popup maxWidth={300} maxHeight={340}>
@@ -161,7 +171,7 @@ export function RegionalKnowledgeMap({
                     <div className="mt-1 grid grid-cols-2 gap-x-2 gap-y-0.5 border-t border-black/10 pt-1 text-[10px]">
                       <span className="text-muted">ICAO</span>
                       <span>{a.icaoCode ?? NOT_REPORTED}</span>
-                      <span className="text-muted">Runway L × W</span>
+                      <span className="text-muted">Runway{a.runwayDesignator ? ` ${a.runwayDesignator}` : ""} L × W</span>
                       <span>
                         {fmtFt(a.runwayLengthFt)} × {a.runwayWidthFt === null ? NOT_REPORTED : `${a.runwayWidthFt.toLocaleString()} ft`}
                       </span>

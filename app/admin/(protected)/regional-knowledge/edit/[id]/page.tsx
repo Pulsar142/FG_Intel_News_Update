@@ -31,6 +31,7 @@ export default async function EditAirbasePage({ params }: { params: Promise<{ id
         icaoCode={airbase.icaoCode ?? ""}
         baseType={airbase.baseType}
         description={airbase.description}
+        runwayDesignator={airbase.runwayDesignator}
         runwayLengthFt={airbase.runwayLengthFt}
         runwayWidthFt={airbase.runwayWidthFt}
         elevationFt={airbase.elevationFt}

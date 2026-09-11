@@ -14,6 +14,7 @@ export function AirbaseEditForm({
   icaoCode,
   baseType,
   description,
+  runwayDesignator,
   runwayLengthFt,
   runwayWidthFt,
   elevationFt,
@@ -29,6 +30,7 @@ export function AirbaseEditForm({
   icaoCode: string;
   baseType: string;
   description: string;
+  runwayDesignator: string | null;
   runwayLengthFt: number | null;
   runwayWidthFt: number | null;
   elevationFt: number | null;
@@ -88,7 +90,11 @@ export function AirbaseEditForm({
         </select>
       </label>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
+        <label className="flex flex-col gap-2">
+          <span className={label}>Runway designator</span>
+          <input name="runwayDesignator" defaultValue={runwayDesignator ?? ""} placeholder="e.g. 18/36" className={field} />
+        </label>
         <label className="flex flex-col gap-2">
           <span className={label}>Runway length (ft)</span>
           <input name="runwayLengthFt" type="number" defaultValue={runwayLengthFt ?? ""} className={field} />
