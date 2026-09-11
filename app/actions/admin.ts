@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { generateDraftForRegion } from "@/lib/weeklyRun";
@@ -14,8 +15,9 @@ import { publishAircraftRecognition } from "@/lib/publishAircraftRecognition";
 import { generateAviationSafetyArticle, aviationSlug } from "@/lib/generateAviationSafety";
 import { mondayOf } from "@/lib/weeks";
 import { getMonth, getYear } from "date-fns";
-import type { Region, AviationSafetyRegion } from "@/generated/prisma/client";
+import type { Region, AviationSafetyRegion, AirbaseType, AirbaseUnitCategory } from "@/generated/prisma/client";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
+import { slugify } from "@/lib/slug";
 import { nanoid } from "nanoid";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -729,4 +731,152 @@ export async function replaceAviationSafetyImageAction(
   revalidatePath("/aviation-safety");
   revalidatePath(`/aviation-safety/${article.slug}`);
   return { ok: true };
+}
+
+/** Creates a new "Regional Knowledge" military airbase entry — lands as DRAFT for review. */
+export async function createAirbaseAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const name = String(formData.get("name") ?? "").trim();
+  const country = String(formData.get("country") ?? "").trim();
+  const latitude = Number(formData.get("latitude"));
+  const longitude = Number(formData.get("longitude"));
+  if (!name || !country) return { error: "Name and country are required." };
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return { error: "Latitude and longitude must be valid numbers." };
+  }
+  const sources = parseSourcesText(String(formData.get("sources") ?? ""));
+  if (sources.length === 0) {
+    return { error: 'Add at least one source as "Name | https://url" (one per line).' };
+  }
+
+  const slug = slugify(`${name}-${country}`);
+  const airbase = await db.militaryAirbase.create({
+    data: {
+      slug,
+      name,
+      country,
+      operator: String(formData.get("operator") ?? "").trim(),
+      latitude,
+      longitude,
+      icaoCode: String(formData.get("icaoCode") ?? "").trim() || null,
+      baseType: (String(formData.get("baseType") ?? "MILITARY") as AirbaseType) || "MILITARY",
+      description: String(formData.get("description") ?? "").trim(),
+      sources: JSON.stringify(sources),
+      createdBy: "admin",
+    },
+  });
+  revalidatePath("/admin/regional-knowledge");
+  redirect(`/admin/regional-knowledge/edit/${airbase.id}`);
+}
+
+/** Edits an existing airbase's own fields (not its units). */
+export async function editAirbaseAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const name = String(formData.get("name") ?? "").trim();
+  const country = String(formData.get("country") ?? "").trim();
+  const latitude = Number(formData.get("latitude"));
+  const longitude = Number(formData.get("longitude"));
+  if (!name || !country) return { error: "Name and country are required." };
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    return { error: "Latitude and longitude must be valid numbers." };
+  }
+  const sources = parseSourcesText(String(formData.get("sources") ?? ""));
+  if (sources.length === 0) {
+    return { error: 'Add at least one source as "Name | https://url" (one per line).' };
+  }
+  const icaoCode = String(formData.get("icaoCode") ?? "").trim();
+
+  const airbase = await db.militaryAirbase.update({
+    where: { id },
+    data: {
+      name,
+      country,
+      operator: String(formData.get("operator") ?? "").trim(),
+      latitude,
+      longitude,
+      icaoCode: icaoCode || null,
+      baseType: (String(formData.get("baseType") ?? "MILITARY") as AirbaseType) || "MILITARY",
+      description: String(formData.get("description") ?? "").trim(),
+      sources: JSON.stringify(sources),
+    },
+  });
+  revalidatePath("/admin/regional-knowledge");
+  revalidatePath(`/admin/regional-knowledge/edit/${airbase.id}`);
+  revalidatePath("/regional-knowledge");
+  return { ok: true };
+}
+
+export async function publishAirbaseAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.militaryAirbase.update({ where: { id }, data: { status: "PUBLISHED" } });
+  revalidatePath("/admin/regional-knowledge");
+  revalidatePath("/regional-knowledge");
+}
+
+export async function archiveAirbaseAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.militaryAirbase.update({ where: { id }, data: { status: "ARCHIVED" } });
+  revalidatePath("/admin/regional-knowledge");
+  revalidatePath("/regional-knowledge");
+}
+
+/** Permanently removes an airbase (and its units, via cascade). */
+export async function deleteAirbaseAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await db.militaryAirbase.delete({ where: { id } });
+  revalidatePath("/admin/regional-knowledge");
+  revalidatePath("/regional-knowledge");
+}
+
+/** Adds one resident unit (squadron/air-defence/support/ammo-depot) to an airbase. */
+export async function addAirbaseUnitAction(
+  _state: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  await requireAdmin();
+  const airbaseId = String(formData.get("airbaseId"));
+  const unitName = String(formData.get("unitName") ?? "").trim();
+  const category = String(formData.get("category") ?? "") as AirbaseUnitCategory;
+  if (!unitName || !category) return { error: "Unit name and category are required." };
+  const sources = parseSourcesText(String(formData.get("sources") ?? ""));
+  if (sources.length === 0) {
+    return { error: 'Add at least one source as "Name | https://url" (one per line).' };
+  }
+  const aircraftType = String(formData.get("aircraftType") ?? "").trim();
+  const approxCountRaw = String(formData.get("approxCount") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  await db.airbaseUnit.create({
+    data: {
+      airbaseId,
+      category,
+      unitName,
+      aircraftType: aircraftType || null,
+      approxCount: approxCountRaw ? Number(approxCountRaw) : null,
+      notes: notes || null,
+      sources: JSON.stringify(sources),
+    },
+  });
+  revalidatePath(`/admin/regional-knowledge/edit/${airbaseId}`);
+  revalidatePath("/regional-knowledge");
+  return { ok: true };
+}
+
+export async function deleteAirbaseUnitAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const airbaseId = String(formData.get("airbaseId"));
+  await db.airbaseUnit.delete({ where: { id } });
+  revalidatePath(`/admin/regional-knowledge/edit/${airbaseId}`);
+  revalidatePath("/regional-knowledge");
 }

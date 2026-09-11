@@ -298,3 +298,70 @@ model AviationSafetyBrief {
 
   @@unique([month, year])
 }
+
+enum AirbaseType {
+  MILITARY
+  CIVIL_MILITARY_SHARED
+}
+
+enum AirbaseUnitCategory {
+  FIGHTER_SQUADRON
+  TRANSPORT_SQUADRON
+  HELICOPTER_SQUADRON
+  UAV_SQUADRON
+  AIR_DEFENSE
+  SUPPORT
+  AMMUNITION_DEPOT
+  OTHER
+}
+
+// "Regional Knowledge" — an OSINT-compiled reference of military air bases
+// (and civilian airfields that host military units) across a focused set of
+// Southeast Asian countries plus South China Sea outposts/features.
+// Compiled from public reporting (IISS Military Balance, official air force
+// sites, GlobalSecurity.org, Wikipedia, and — for South China Sea features —
+// CSIS AMTI), never from classified or non-public sources. Reuses
+// ArticleStatus for admin review-gating, same as Aviation Safety: content
+// lands as DRAFT for review before appearing on the public map.
+model MilitaryAirbase {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  country     String // one of the 8 focus countries, or "South China Sea" for disputed/reclaimed features
+  operator    String // e.g. "Republic of Singapore Air Force (RSAF)"
+  latitude    Float
+  longitude   Float
+  icaoCode    String?
+  baseType    AirbaseType   @default(MILITARY)
+  description String // 1-3 sentences: role of the base, general context
+  sources     String // JSON: {name,url}[]
+  status      ArticleStatus @default(DRAFT)
+  createdBy   String        @default("bot") // "bot" | "admin"
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  units AirbaseUnit[]
+
+  @@index([status])
+  @@index([country])
+}
+
+// One resident unit/asset category at a MilitaryAirbase: a flying squadron
+// (with aircraft type + approximate publicly-reported strength), an air
+// defense unit, a support unit, or an on-base ammunition depot. Each unit
+// carries its own sources, since unit-level facts (e.g. current squadron
+// tenancy) often come from a different, more specific citation than the
+// base's own general description.
+model AirbaseUnit {
+  id           String              @id @default(cuid())
+  airbaseId    String
+  airbase      MilitaryAirbase     @relation(fields: [airbaseId], references: [id], onDelete: Cascade)
+  category     AirbaseUnitCategory
+  unitName     String // e.g. "142 Squadron 'Gryphon'" or "1st Air Defence Missile Squadron"
+  aircraftType String? // e.g. "F-15SG Eagle" — null for non-flying units (air defense/support/ammo depot)
+  approxCount  Int? // approximate aircraft count, if publicly reported — never a guess
+  notes        String? // freeform detail, e.g. role, subordinate command, ordnance types stored
+  sources      String // JSON: {name,url}[]
+
+  @@index([airbaseId])
+}

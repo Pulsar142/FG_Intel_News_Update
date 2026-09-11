@@ -9,6 +9,7 @@ const TABS = [
   { href: "/admin/archived", label: "Archived" },
   { href: "/admin/generate", label: "Generate" },
   { href: "/admin/aviation-safety", label: "Aviation Safety" },
+  { href: "/admin/regional-knowledge", label: "Regional Knowledge" },
   { href: "/admin/settings", label: "Sources & Settings" },
 ];
 

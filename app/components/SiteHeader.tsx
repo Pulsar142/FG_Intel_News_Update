@@ -21,6 +21,12 @@ export function SiteHeader({ role }: { role: Role | null }) {
           >
             Aviation Safety
           </Link>
+          <Link
+            href="/regional-knowledge"
+            className="rounded border border-gold/60 px-3 py-1.5 text-gold hover:bg-gold hover:text-background transition-colors"
+          >
+            Regional Knowledge
+          </Link>
           {role === "admin" && (
             <Link
               href="/admin"

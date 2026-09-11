@@ -151,6 +151,15 @@ export async function getAviationSafetyBriefHistory() {
   return db.aviationSafetyBrief.findMany({ orderBy: [{ year: "asc" }, { month: "asc" }] });
 }
 
+/** Published "Regional Knowledge" airbases with their units, for the interactive map + distance tool. */
+export async function getPublishedAirbases() {
+  return db.militaryAirbase.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ country: "asc" }, { name: "asc" }],
+    include: { units: true },
+  });
+}
+
 export async function getEnabledRegions(): Promise<Region[]> {
   const settings = await db.regionSetting.findMany();
   const disabled = new Set(settings.filter((s) => !s.enabled).map((s) => s.region));
