@@ -10,7 +10,8 @@ export function EditForm({
   summaryP2,
   summaryP3,
   didYouKnow,
-  perspective,
+  strategicRelevance,
+  militaryPerspective,
   bullets,
   articleDate,
 }: {
@@ -20,7 +21,8 @@ export function EditForm({
   summaryP2: string;
   summaryP3: string;
   didYouKnow: string;
-  perspective: string;
+  strategicRelevance: string;
+  militaryPerspective: string;
   bullets: string[];
   articleDate: string;
 }) {
@@ -64,8 +66,13 @@ export function EditForm({
       </label>
 
       <label className="flex flex-col gap-2">
-        <span className={label}>Perspective</span>
-        <textarea name="perspective" defaultValue={perspective} rows={5} className={field} />
+        <span className={label}>Strategic Relevance in South East Asia</span>
+        <textarea name="strategicRelevance" defaultValue={strategicRelevance} rows={4} className={field} />
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Military Perspective in South East Asia</span>
+        <textarea name="militaryPerspective" defaultValue={militaryPerspective} rows={4} className={field} />
       </label>
 
       <label className="flex flex-col gap-2">

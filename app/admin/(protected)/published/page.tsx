@@ -5,7 +5,7 @@ import { storyDateLabel } from "@/lib/weeks";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { archiveAction, deleteArticleAction } from "@/app/actions/admin";
 import { DeleteButton } from "@/app/components/DeleteButton";
-import { HidePerspectiveButton } from "@/app/admin/(protected)/edit/HidePerspectiveButton";
+import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
 
 export default async function PublishedPage() {
   const published = await db.article.findMany({
@@ -68,7 +68,7 @@ export default async function PublishedPage() {
                   articleId={a.id}
                   confirmText="Permanently delete this published article? It will disappear from the live site immediately. This cannot be undone."
                 />
-                <HidePerspectiveButton articleId={a.id} hidden={a.perspectiveHidden} />
+                <HideAnalysisButton articleId={a.id} hidden={a.analysisHidden} />
               </div>
             </div>
           ))}

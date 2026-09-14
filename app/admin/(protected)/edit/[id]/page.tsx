@@ -4,7 +4,7 @@ import { REGION_LABELS } from "@/lib/sources";
 import { EditForm } from "@/app/admin/(protected)/edit/EditForm";
 import { ImageForm } from "@/app/admin/(protected)/edit/ImageForm";
 import { RegenerateFieldForm } from "@/app/admin/(protected)/edit/RegenerateFieldForm";
-import { HidePerspectiveButton } from "@/app/admin/(protected)/edit/HidePerspectiveButton";
+import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export default async function EditArticlePage({
@@ -33,14 +33,15 @@ export default async function EditArticlePage({
       </p>
       <ImageForm articleId={article.id} image={images[0] ?? null} sources={sources} />
       <EditForm
-        key={`${article.didYouKnow}|${article.perspective}`}
+        key={`${article.didYouKnow}|${article.strategicRelevance}|${article.militaryPerspective}`}
         articleId={article.id}
         title={article.title}
         summaryP1={article.summaryP1}
         summaryP2={article.summaryP2}
         summaryP3={article.summaryP3 ?? ""}
         didYouKnow={article.didYouKnow}
-        perspective={article.perspective}
+        strategicRelevance={article.strategicRelevance}
+        militaryPerspective={article.militaryPerspective}
         bullets={JSON.parse(article.bullets)}
         articleDate={article.articleDate?.toISOString().slice(0, 10) ?? ""}
       />
@@ -52,8 +53,17 @@ export default async function EditArticlePage({
           instead.
         </p>
         <RegenerateFieldForm articleId={article.id} field="didYouKnow" label="Did You Know?" />
-        <RegenerateFieldForm articleId={article.id} field="perspective" label="Perspective" />
-        <HidePerspectiveButton articleId={article.id} hidden={article.perspectiveHidden} />
+        <RegenerateFieldForm
+          articleId={article.id}
+          field="strategicRelevance"
+          label="Strategic Relevance in South East Asia"
+        />
+        <RegenerateFieldForm
+          articleId={article.id}
+          field="militaryPerspective"
+          label="Military Perspective in South East Asia"
+        />
+        <HideAnalysisButton articleId={article.id} hidden={article.analysisHidden} />
 
         {fieldRequests.length > 0 && (
           <div className="flex flex-col gap-1 border-t border-border pt-3">
@@ -62,7 +72,12 @@ export default async function EditArticlePage({
             </span>
             {fieldRequests.map((r) => (
               <p key={r.id} className="font-mono text-xs text-muted">
-                {r.field === "didYouKnow" ? "Did You Know?" : "Perspective"} — &quot;{r.question}&quot; —{" "}
+                {r.field === "didYouKnow"
+                  ? "Did You Know?"
+                  : r.field === "strategicRelevance"
+                    ? "Strategic Relevance"
+                    : "Military Perspective"}{" "}
+                — &quot;{r.question}&quot; —{" "}
                 <span
                   className={
                     r.status === "PENDING"

@@ -111,14 +111,14 @@ export async function discardDraftAction(formData: FormData) {
   revalidatePath("/admin/pending");
 }
 
-/** Lets an admin hide the Perspective section from the public article page without deleting the text — flip back any time. */
-export async function toggleHidePerspectiveAction(formData: FormData) {
+/** Lets an admin hide the Strategic Relevance / Military Perspective sections from the public article page without deleting the text — flip back any time. */
+export async function toggleHideAnalysisAction(formData: FormData) {
   await requireAdmin();
   const articleId = String(formData.get("articleId"));
   const article = await db.article.findUniqueOrThrow({ where: { id: articleId } });
   await db.article.update({
     where: { id: articleId },
-    data: { perspectiveHidden: !article.perspectiveHidden },
+    data: { analysisHidden: !article.analysisHidden },
   });
   revalidatePath("/admin/pending");
   revalidatePath("/admin/published");
@@ -197,7 +197,8 @@ export async function editArticleAction(
       summaryP2: String(formData.get("summaryP2") ?? ""),
       summaryP3: summaryP3Raw || null,
       didYouKnow: String(formData.get("didYouKnow") ?? ""),
-      perspective: String(formData.get("perspective") ?? ""),
+      strategicRelevance: String(formData.get("strategicRelevance") ?? ""),
+      militaryPerspective: String(formData.get("militaryPerspective") ?? ""),
       bullets: JSON.stringify(bullets),
       articleDate,
     },
@@ -296,7 +297,12 @@ export async function regenerateFieldAction(
       title: article.title,
       summaryP1: article.summaryP1,
       summaryP2: article.summaryP2,
-      currentText: field === "didYouKnow" ? article.didYouKnow : article.perspective,
+      currentText:
+        field === "didYouKnow"
+          ? article.didYouKnow
+          : field === "strategicRelevance"
+            ? article.strategicRelevance
+            : article.militaryPerspective,
     });
   } catch (e) {
     return { error: e instanceof Error ? e.message : String(e) };

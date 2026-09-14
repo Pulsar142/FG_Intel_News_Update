@@ -18,7 +18,8 @@ export type ArticleInput = {
   summaryP2: string;
   summaryP3?: string;
   didYouKnow: string;
-  perspective: string;
+  strategicRelevance: string;
+  militaryPerspective: string;
   bullets: string[];
   images: ArticleImage[];
   sources: ArticleSource[];

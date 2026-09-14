@@ -4,7 +4,6 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import type { Region } from "@/generated/prisma/client";
 import { REGION_LABELS } from "@/lib/sources";
-import { perspectiveInstruction } from "@/lib/generateArticle";
 
 const MODEL = "claude-sonnet-5";
 
@@ -12,7 +11,7 @@ const FieldSchema = z.object({
   text: z.string().describe("The rewritten paragraph(s), matching the house style exactly."),
 });
 
-export type RegenerableField = "didYouKnow" | "perspective";
+export type RegenerableField = "didYouKnow" | "strategicRelevance" | "militaryPerspective";
 
 /**
  * Rewrites a single "Did You Know?" or "Perspective" section in response to
@@ -34,11 +33,18 @@ export async function regenerateArticleField(params: {
   const { field, question, region, country, title, summaryP1, summaryP2, currentText } = params;
   const client = new Anthropic();
 
-  const fieldLabel = field === "didYouKnow" ? `"Did You Know?"` : `"Perspective"`;
+  const fieldLabel =
+    field === "didYouKnow"
+      ? `"Did You Know?"`
+      : field === "strategicRelevance"
+        ? `"Strategic Relevance in South East Asia"`
+        : `"Military Perspective in South East Asia"`;
   const styleNote =
     field === "didYouKnow"
       ? "A meaty passage (2-4 sentences) going well beyond a single surface fact — include specific technical details, specs/numbers, historical context, or a comparison that deepens the reader's understanding. Never invent specifics not grounded in the article's summary below or well-established general knowledge about the equipment/topic it names."
-      : `One analytical paragraph (or, for multi-national stories, multiple short named-perspective paragraphs separated by a blank line) written like a professional military intelligence analyst — measured, specific about operational/strategic implications. ${perspectiveInstruction(region)}`;
+      : field === "strategicRelevance"
+        ? "One analytical paragraph, written by a senior military strategist, on why this development matters to the South East Asian security environment and balance of power — regional alliances/partnerships, great-power competition, sea lanes and chokepoints, technology or doctrine diffusion, or precedent it sets for the region — even when the underlying story is not itself set in South East Asia."
+        : "One analytical paragraph, written by a senior military analyst, on the operational/capability implications for South East Asian armed forces generally — doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country's military unless the story is genuinely about that country specifically.";
 
   const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin reviewing this article wants the ${fieldLabel} section rewritten to address a specific question or instruction of theirs.
 

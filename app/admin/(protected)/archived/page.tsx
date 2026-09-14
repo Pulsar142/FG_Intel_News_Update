@@ -5,7 +5,7 @@ import { storyDateLabel } from "@/lib/weeks";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { deleteArticleAction } from "@/app/actions/admin";
 import { DeleteButton } from "@/app/components/DeleteButton";
-import { HidePerspectiveButton } from "@/app/admin/(protected)/edit/HidePerspectiveButton";
+import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
 
 export default async function ArchivedPage() {
   const archived = await db.article.findMany({
@@ -56,7 +56,7 @@ export default async function ArchivedPage() {
                   articleId={a.id}
                   confirmText="Permanently delete this archived article? This cannot be undone."
                 />
-                <HidePerspectiveButton articleId={a.id} hidden={a.perspectiveHidden} />
+                <HideAnalysisButton articleId={a.id} hidden={a.analysisHidden} />
               </div>
             </div>
           ))}

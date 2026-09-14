@@ -1,8 +1,8 @@
 "use client";
 
-import { toggleHidePerspectiveAction } from "@/app/actions/admin";
+import { toggleHideAnalysisAction } from "@/app/actions/admin";
 
-export function HidePerspectiveButton({
+export function HideAnalysisButton({
   articleId,
   hidden,
 }: {
@@ -10,7 +10,7 @@ export function HidePerspectiveButton({
   hidden: boolean;
 }) {
   return (
-    <form action={toggleHidePerspectiveAction}>
+    <form action={toggleHideAnalysisAction}>
       <input type="hidden" name="articleId" value={articleId} />
       <button
         type="submit"
@@ -20,7 +20,7 @@ export function HidePerspectiveButton({
             : "rounded border border-border px-3 py-1.5 font-mono text-xs text-muted hover:border-danger hover:text-danger transition-colors"
         }
       >
-        {hidden ? "Perspective hidden — Show it" : "Hide Perspective from public page"}
+        {hidden ? "Analysis hidden — Show it" : "Hide Strategic/Military Analysis from public page"}
       </button>
     </form>
   );

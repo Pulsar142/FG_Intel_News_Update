@@ -27,8 +27,11 @@ const ArticleGenSchema = z.object({
     .describe(
       "A meaty 'Did You Know?' passage (2-4 sentences) going well beyond a single surface fact — include specific technical details, specs/numbers, historical context, or a comparison that deepens the reader's understanding of the equipment/topic named in the story."
     ),
-  perspective: z.string().describe(
-    "The house 'perspective' section: one analytical paragraph (or, for multi-national stories, multiple short named-perspective paragraphs separated by a blank line) written from a military analyst's point of view."
+  strategicRelevance: z.string().describe(
+    "The 'Strategic Relevance in South East Asia' section: one analytical paragraph, written by a senior military strategist, on why this development matters to the South East Asian security environment and balance of power — regional alliances/partnerships, great-power competition, sea lanes and chokepoints, technology or doctrine diffusion, or precedent it sets for the region — even when the underlying story is not itself set in South East Asia."
+  ),
+  militaryPerspective: z.string().describe(
+    "The 'Military Perspective in South East Asia' section: one analytical paragraph, written by a senior military analyst, on the operational/capability implications for South East Asian armed forces generally — what it means for regional air forces/navies/armies' doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country's military unless the story is genuinely about that country specifically."
   ),
   bullets: z
     .array(z.string())
@@ -39,18 +42,10 @@ const ArticleGenSchema = z.object({
 
 export type ArticleGeneration = z.infer<typeof ArticleGenSchema>;
 
-export function perspectiveInstruction(region: Region): string {
-  switch (region) {
-    case "SINGAPORE":
-      return "Write the perspective section as \"How it affects the RSAF\" — one paragraph of military-analyst commentary on the operational or strategic implications for the Republic of Singapore Air Force / SAF.";
-    case "SEA":
-    case "MALAYSIA":
-    case "INDONESIA":
-      return "Write the perspective section starting with a line like \"How this affects SEA and the SAF:\" — one paragraph of military-analyst commentary on the regional implications and what it means for Singapore's SAF.";
-    default:
-      return "Write the perspective section as \"Singapore's Perspective:\" — one paragraph of military-analyst commentary on how this affects Singapore, the RSAF/SAF, or Singapore's strategic interests. For a story with multiple clearly distinct national actors (e.g. a multi-country conflict or operation), you may instead write one short paragraph per actor labelled \"<Country>'s Perspective:\", each separated by a blank line, ending with a \"Singapore's Perspective:\" paragraph.";
-  }
-}
+export const STRATEGIC_ANALYSIS_INSTRUCTION =
+  "Write two analytical sections, in the voice of a senior military analyst and researcher, always framed around South East Asia regardless of where the story itself is set:\n" +
+  '- "Strategic Relevance in South East Asia": one paragraph on why this development matters to the South East Asian security environment and balance of power — regional alliances/partnerships, great-power competition, sea lanes and chokepoints, technology or doctrine diffusion, or precedent it sets for the region.\n' +
+  '- "Military Perspective in South East Asia": one paragraph on the operational/capability implications for South East Asian armed forces generally — doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country\'s military unless the story is genuinely about that country specifically.';
 
 export async function generateArticleDraft(params: {
   region: Region;
@@ -72,7 +67,7 @@ export async function generateArticleDraft(params: {
 House style, per article:
 - An in-depth summary in two paragraphs, or three when the story genuinely has enough depth (multiple developments, historical background, several involved parties) to warrant the extra room — grounded ONLY in the source text you are given. Do not invent facts, quotes, or figures not present in the source text. Don't pad to three paragraphs artificially; only do it when there's real substance for a third.
 - One "Did You Know?" passage (2-4 sentences) that goes beyond a single surface fact — bring in specific technical details, specs/numbers, historical context, or a comparison, drawn from the source text or well-established general knowledge about the equipment/topic named in it (never invented specifics).
-- One perspective section, written like a professional military intelligence analyst: measured, non-sensational, specific about operational/strategic implications. ${perspectiveInstruction(region)}
+- ${STRATEGIC_ANALYSIS_INSTRUCTION}
 - 3-5 short bullet points capturing the key facts, for a "quick brief" popup.
 - A punchy, specific headline (not clickbait).
 
@@ -124,7 +119,8 @@ Write the FIGHTER GROUP INTEL briefing article for this story, following the hou
     summaryP2: gen.summaryP2,
     summaryP3: gen.summaryP3 ?? undefined,
     didYouKnow: gen.didYouKnow,
-    perspective: gen.perspective,
+    strategicRelevance: gen.strategicRelevance,
+    militaryPerspective: gen.militaryPerspective,
     bullets: gen.bullets,
     images: [
       {

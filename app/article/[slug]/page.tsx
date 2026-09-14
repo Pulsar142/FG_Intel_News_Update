@@ -17,8 +17,6 @@ export default async function ArticlePage({
 
   if (!article || article.status === "DRAFT") notFound();
 
-  const perspectiveParagraphs = article.perspective.split("\n\n").filter(Boolean);
-
   return (
     <>
       <SiteHeader role={session?.role ?? null} />
@@ -67,17 +65,19 @@ export default async function ArticlePage({
           <p className="text-sm leading-relaxed text-foreground">{article.didYouKnow}</p>
         </div>
 
-        {!article.perspectiveHidden && (
-          <div className="mt-4 rounded border border-gold/40 bg-panel p-4">
-            <p className="stencil mb-2 text-xs tracking-widest text-gold">
-              {article.region === "SINGAPORE" || perspectiveParagraphs.length === 1
-                ? "Singapore's Perspective"
-                : "Perspectives"}
-            </p>
-            <div className="flex flex-col gap-3 text-sm leading-relaxed text-foreground">
-              {perspectiveParagraphs.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
+        {!article.analysisHidden && (
+          <div className="mt-4 flex flex-col gap-4">
+            <div className="rounded border border-gold/40 bg-panel p-4">
+              <p className="stencil mb-2 text-xs tracking-widest text-gold">
+                Strategic Relevance in South East Asia
+              </p>
+              <p className="text-sm leading-relaxed text-foreground">{article.strategicRelevance}</p>
+            </div>
+            <div className="rounded border border-gold/40 bg-panel p-4">
+              <p className="stencil mb-2 text-xs tracking-widest text-gold">
+                Military Perspective in South East Asia
+              </p>
+              <p className="text-sm leading-relaxed text-foreground">{article.militaryPerspective}</p>
             </div>
           </div>
         )}
