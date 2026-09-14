@@ -1,27 +1,35 @@
+import Link from "next/link";
 import {
   getPublishedAviationSafetyArticles,
   getLatestAviationSafetyBrief,
   getAviationSafetyBriefHistory,
+  getAviationSafetyArchiveTree,
+  getAviationSafetyArticlesForWeek,
 } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { AviationSafetyRegionTabs } from "@/app/components/AviationSafetyRegionTabs";
 import { AviationSafetyCardView } from "@/app/components/AviationSafetyCardView";
 import { AviationSafetyTrendChart } from "@/app/components/AviationSafetyTrendChart";
+import { ArchiveSidebar } from "@/app/components/ArchiveSidebar";
 import type { AviationSafetyRegion } from "@/generated/prisma/client";
 
 export default async function AviationSafetyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ region?: string }>;
+  searchParams: Promise<{ region?: string; week?: string }>;
 }) {
-  const { region } = await searchParams;
+  const { region, week } = await searchParams;
   const activeRegion = region === "ASIA" || region === "GLOBAL" ? (region as AviationSafetyRegion) : undefined;
-  const [articles, brief, briefHistory] = await Promise.all([
-    getPublishedAviationSafetyArticles(activeRegion),
+  const [archiveTree, brief, briefHistory] = await Promise.all([
+    getAviationSafetyArchiveTree(),
     getLatestAviationSafetyBrief(),
     getAviationSafetyBriefHistory(),
   ]);
+
+  const articles = week
+    ? await getAviationSafetyArticlesForWeek(new Date(`${week}T00:00:00.000Z`), activeRegion)
+    : await getPublishedAviationSafetyArticles(activeRegion);
 
   return (
     <>
@@ -54,8 +62,21 @@ export default async function AviationSafetyPage({
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="order-2 min-w-0 flex-1 lg:order-1">
+          <div className="order-3 shrink-0 lg:order-1">
+            <ArchiveSidebar tree={archiveTree} activeWeek={week} basePath="/aviation-safety" />
+          </div>
+
+          <div className="order-2 min-w-0 flex-1 lg:order-2">
             <AviationSafetyRegionTabs active={activeRegion} />
+
+            {week && (
+              <p className="mt-4 font-mono text-xs text-muted">
+                Showing archived briefings for the week selected in the sidebar.{" "}
+                <Link href="/aviation-safety" className="text-accent underline">
+                  Back to current briefings
+                </Link>
+              </p>
+            )}
 
             {articles.length === 0 ? (
               <p className="mt-8 text-center text-muted font-mono text-sm">
@@ -70,7 +91,7 @@ export default async function AviationSafetyPage({
             )}
           </div>
 
-          <aside className="order-1 shrink-0 lg:sticky lg:top-20 lg:order-2 lg:w-72">
+          <aside className="order-1 shrink-0 lg:sticky lg:top-20 lg:order-3 lg:w-72">
             <AviationSafetyTrendChart
               data={briefHistory.map((b) => ({
                 month: b.month,

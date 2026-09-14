@@ -2,7 +2,15 @@ import Link from "next/link";
 import type { ArchiveMonth } from "@/lib/queries";
 import { monthLabel, weekLabel } from "@/lib/weeks";
 
-function ArchiveTree({ tree, activeWeek }: { tree: ArchiveMonth[]; activeWeek?: string }) {
+function ArchiveTree({
+  tree,
+  activeWeek,
+  basePath,
+}: {
+  tree: ArchiveMonth[];
+  activeWeek?: string;
+  basePath: string;
+}) {
   if (tree.length === 0) {
     return <p className="text-sm text-muted font-mono">No archived briefings yet.</p>;
   }
@@ -20,7 +28,7 @@ function ArchiveTree({ tree, activeWeek }: { tree: ArchiveMonth[]; activeWeek?: 
               return (
                 <li key={iso}>
                   <Link
-                    href={`/?week=${iso}`}
+                    href={`${basePath}?week=${iso}`}
                     className={`block rounded px-2 py-1 text-sm transition-colors ${
                       active
                         ? "bg-accent text-background font-medium"
@@ -40,7 +48,15 @@ function ArchiveTree({ tree, activeWeek }: { tree: ArchiveMonth[]; activeWeek?: 
   );
 }
 
-export function ArchiveSidebar({ tree, activeWeek }: { tree: ArchiveMonth[]; activeWeek?: string }) {
+export function ArchiveSidebar({
+  tree,
+  activeWeek,
+  basePath = "/",
+}: {
+  tree: ArchiveMonth[];
+  activeWeek?: string;
+  basePath?: string;
+}) {
   return (
     <>
       <details className="mb-4 rounded border border-border bg-panel lg:hidden">
@@ -48,14 +64,14 @@ export function ArchiveSidebar({ tree, activeWeek }: { tree: ArchiveMonth[]; act
           Archive
         </summary>
         <div className="scrollbar-olive max-h-80 overflow-y-auto border-t border-border p-4">
-          <ArchiveTree tree={tree} activeWeek={activeWeek} />
+          <ArchiveTree tree={tree} activeWeek={activeWeek} basePath={basePath} />
         </div>
       </details>
       <aside className="hidden w-64 shrink-0 lg:block">
         <div className="sticky top-20 rounded border border-border bg-panel p-4">
           <p className="stencil mb-3 text-sm tracking-widest text-foreground">Archive</p>
           <div className="scrollbar-olive max-h-[70vh] overflow-y-auto">
-            <ArchiveTree tree={tree} activeWeek={activeWeek} />
+            <ArchiveTree tree={tree} activeWeek={activeWeek} basePath={basePath} />
           </div>
         </div>
       </aside>

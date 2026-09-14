@@ -130,6 +130,28 @@ export async function getPublishedAviationSafetyArticles(region?: AviationSafety
   return rows.map(toAviationSafetyCard);
 }
 
+/** Month/week archive tree for Aviation Safety, mirroring getArchiveTree() for regular Articles. */
+export async function getAviationSafetyArchiveTree(): Promise<ArchiveMonth[]> {
+  const rows = await db.aviationSafetyArticle.findMany({
+    where: { status: { in: ["PUBLISHED", "ARCHIVED"] } },
+    select: { weekOf: true, month: true, year: true },
+    orderBy: { weekOf: "desc" },
+  });
+  return buildArchiveTree(rows);
+}
+
+/** Every Aviation Safety briefing (published or archived) for one archive week, optionally filtered by region. */
+export async function getAviationSafetyArticlesForWeek(
+  weekOf: Date,
+  region?: AviationSafetyRegion
+): Promise<AviationSafetyCard[]> {
+  const rows = await db.aviationSafetyArticle.findMany({
+    where: { weekOf, status: { in: ["PUBLISHED", "ARCHIVED"] }, ...(region ? { region } : {}) },
+    orderBy: { publishedAt: "desc" },
+  });
+  return rows.map(toAviationSafetyCard);
+}
+
 export async function getAviationSafetyArticleBySlug(slug: string) {
   const row = await db.aviationSafetyArticle.findUnique({ where: { slug } });
   if (!row) return null;
@@ -220,13 +242,7 @@ export type ArchiveMonth = {
   weeks: { weekOf: Date; count: number }[];
 };
 
-export async function getArchiveTree(): Promise<ArchiveMonth[]> {
-  const rows = await db.article.findMany({
-    where: { status: { in: ["PUBLISHED", "ARCHIVED"] } },
-    select: { weekOf: true, month: true, year: true },
-    orderBy: { weekOf: "desc" },
-  });
-
+function buildArchiveTree(rows: { weekOf: Date; month: number; year: number }[]): ArchiveMonth[] {
   const monthMap = new Map<string, ArchiveMonth>();
   for (const row of rows) {
     const monthKey = `${row.year}-${row.month}`;
@@ -248,6 +264,15 @@ export async function getArchiveTree(): Promise<ArchiveMonth[]> {
   }
 
   return [...monthMap.values()].sort((a, b) => (a.year !== b.year ? b.year - a.year : b.month - a.month));
+}
+
+export async function getArchiveTree(): Promise<ArchiveMonth[]> {
+  const rows = await db.article.findMany({
+    where: { status: { in: ["PUBLISHED", "ARCHIVED"] } },
+    select: { weekOf: true, month: true, year: true },
+    orderBy: { weekOf: "desc" },
+  });
+  return buildArchiveTree(rows);
 }
 
 export async function getArticlesForWeek(weekOf: Date) {
