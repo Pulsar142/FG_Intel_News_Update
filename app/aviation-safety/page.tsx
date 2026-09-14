@@ -62,11 +62,7 @@ export default async function AviationSafetyPage({
         </div>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="order-3 shrink-0 lg:order-1">
-            <ArchiveSidebar tree={archiveTree} activeWeek={week} basePath="/aviation-safety" />
-          </div>
-
-          <div className="order-2 min-w-0 flex-1 lg:order-2">
+          <div className="order-2 min-w-0 flex-1 lg:order-1">
             <AviationSafetyRegionTabs active={activeRegion} />
 
             {week && (
@@ -91,18 +87,21 @@ export default async function AviationSafetyPage({
             )}
           </div>
 
-          <aside className="order-1 shrink-0 lg:sticky lg:top-20 lg:order-3 lg:w-72">
-            <AviationSafetyTrendChart
-              data={briefHistory.map((b) => ({
-                month: b.month,
-                year: b.year,
-                militaryIncidentCount: b.militaryIncidentCount,
-                militaryTrendTag: b.militaryTrendTag,
-                commercialIncidentCount: b.commercialIncidentCount,
-                commercialTrendTag: b.commercialTrendTag,
-              }))}
-            />
-          </aside>
+          <div className="order-1 flex shrink-0 flex-col gap-6 lg:order-2 lg:w-64">
+            <div className="lg:sticky lg:top-20">
+              <AviationSafetyTrendChart
+                data={briefHistory.map((b) => ({
+                  month: b.month,
+                  year: b.year,
+                  militaryIncidentCount: b.militaryIncidentCount,
+                  militaryTrendTag: b.militaryTrendTag,
+                  commercialIncidentCount: b.commercialIncidentCount,
+                  commercialTrendTag: b.commercialTrendTag,
+                }))}
+              />
+            </div>
+            <ArchiveSidebar tree={archiveTree} activeWeek={week} basePath="/aviation-safety" />
+          </div>
         </div>
       </main>
       <footer className="border-t border-border px-4 py-4 text-center font-mono text-[10px] text-muted">
