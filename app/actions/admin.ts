@@ -535,9 +535,19 @@ export async function generateAviationSafetyAction(
     return { error: "Enter a country for a Custom-region briefing." };
   }
 
+  const existingIncidents = await db.aviationSafetyArticle.findMany({
+    select: { title: true },
+    orderBy: { generatedAt: "desc" },
+    take: 150,
+  });
+
   let result;
   try {
-    result = await generateAviationSafetyArticle({ region, country });
+    result = await generateAviationSafetyArticle({
+      region,
+      country,
+      existingTitles: existingIncidents.map((a) => a.title),
+    });
   } catch (e) {
     return { error: e instanceof Error ? e.message : String(e) };
   }

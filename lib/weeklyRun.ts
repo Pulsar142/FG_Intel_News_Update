@@ -6,6 +6,7 @@ import { fetchCandidatesForRegion } from "@/lib/fetchCandidates";
 import { searchWebCandidates } from "@/lib/webSearchCandidates";
 import { crossCheck } from "@/lib/crossCheck";
 import { findCorroboratingSources } from "@/lib/findCorroboration";
+import { selectFreshCandidate } from "@/lib/dedupeCandidate";
 import { generateArticleDraft } from "@/lib/generateArticle";
 import { mondayOf } from "@/lib/weeks";
 import { publishArticle } from "@/lib/publish";
@@ -14,6 +15,14 @@ import { CORE_REGIONS, OPTIONAL_REGIONS } from "@/lib/sources";
 export class NoCandidatesError extends Error {
   constructor(region: string) {
     super(`No relevant, dated candidates found for ${region}. Try again later or widen the cutoff.`);
+  }
+}
+
+export class AllCandidatesDuplicateError extends Error {
+  constructor(region: string) {
+    super(
+      `Every recent candidate story for ${region} was already covered in a previous week or the archive. Try again later once new coverage appears.`
+    );
   }
 }
 
@@ -44,7 +53,18 @@ export async function generateDraftForRegion(
   const sorted = [...candidates].sort(
     (a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0)
   );
-  const chosen = sorted[0];
+
+  // Screen the top of the list against every title already on the site (any
+  // status, any region/week) so a later stage of an already-covered story —
+  // reported under a different headline — doesn't get written up again.
+  const existing = await db.article.findMany({
+    select: { title: true },
+    orderBy: { createdAt: "desc" },
+    take: 150,
+  });
+  const chosen = await selectFreshCandidate(sorted.slice(0, 10), existing.map((a) => a.title));
+  if (!chosen) throw new AllCandidatesDuplicateError(options.country ?? region);
+
   const { corroboratingSources: poolCorroboration } = crossCheck(chosen, candidates);
 
   // The region-wide candidate pool only incidentally turns up corroborating

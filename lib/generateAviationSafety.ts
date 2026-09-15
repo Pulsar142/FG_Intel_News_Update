@@ -103,6 +103,7 @@ function regionScopeInstruction(region: AviationSafetyRegion, country?: string):
 export async function generateAviationSafetyArticle(params: {
   region: AviationSafetyRegion;
   country?: string;
+  existingTitles?: string[];
 }): Promise<{
   title: string;
   incidentCategory: string;
@@ -120,7 +121,7 @@ export async function generateAviationSafetyArticle(params: {
   sources: ArticleSource[];
   reliabilityScore: number;
 } | null> {
-  const { region, country } = params;
+  const { region, country, existingTitles = [] } = params;
   const client = new Anthropic();
 
   const system = `You are, at once, a military research analyst, an aviation safety analyst and accident investigator, and a safety advocate, writing for "FIGHTER GROUP INTEL / NEWS UPDATE"'s "Aviation Safety" section — content directed at aviation personnel (aircrew, maintainers, ATC, safety officers).
@@ -135,7 +136,11 @@ Use the 5M4L model to show, for each grounded contributing factor, which operati
 Topics in scope: ${AVIATION_SAFETY_TOPICS.join("; ")}.
 
 ${regionScopeInstruction(region, country)}
-
+${
+  existingTitles.length > 0
+    ? `\nAlready-covered incidents (do not pick any of these, or a later development of the same underlying event — e.g. a follow-up investigation finding on the same crash — even if reported by a different outlet or under a different headline; find a genuinely different incident instead):\n${existingTitles.map((t, i) => `${i + 1}. ${t}`).join("\n")}\n`
+    : ""
+}
 Rules:
 - The incident must be genuinely recent — reported or occurring within roughly the last month (about 30 days) — and real and verifiable against a reliable, established source: an official accident/incident investigation authority (NTSB, AAIB, ATSB, TSB Canada, JTSB, BEA, ICAO, a national CAA), or established aviation-safety journalism (Aviation Safety Network/ASN, The Aviation Herald, FlightGlobal, Aviation Week, AVweb) — never an unverified blog, forum, or social-media claim, and never an older/historical event even if instructive. Never invented.
 - Never fabricate facts, quotes, figures, dates, or causes. Every claim in the summary, Safety Analysis, Preventative Measures, and HFACS sections must be grounded in what the source(s) actually reported or in well-established aviation safety analysis practice — if the reporting doesn't support a specific root cause, say so rather than inventing one.
