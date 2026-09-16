@@ -85,7 +85,7 @@ export default async function HomePage({
         </div>
       </main>
       <footer className="border-t border-border px-4 py-4 text-center font-mono text-[10px] text-muted">
-        KNOWLEDGE BEFORE CONFLICT — open-source intelligence, not an official government publication.
+        KNOWLEDGE BEFORE CONFLICT — open-source information, not an official government publication.
       </footer>
     </>
   );
