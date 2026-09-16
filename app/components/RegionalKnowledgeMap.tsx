@@ -1,12 +1,13 @@
 "use client";
 
 import "leaflet/dist/leaflet.css";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, Tooltip, useMap } from "react-leaflet";
 import L from "leaflet";
 import type { Feature } from "geojson";
 import { AIRBASE_UNIT_CATEGORY_LABELS, hasFlyingUnit } from "@/lib/regionalKnowledge";
 import type { ArticleSource } from "@/lib/types";
+import type { AerodromeWeather } from "@/lib/aerodromeWeather";
 
 export type AirbaseUnitData = {
   id: string;
@@ -50,6 +51,70 @@ function runwaySummary(a: AirbaseMapData): string {
   const length = `${a.runwayLengthFt.toLocaleString()} ft`;
   const width = a.runwayWidthFt === null ? NOT_REPORTED : `${a.runwayWidthFt.toLocaleString()} ft`;
   return `${label}: ${length} x ${width}`;
+}
+
+type WeatherState = AerodromeWeather | "loading" | "error" | "unavailable";
+
+const FLIGHT_CATEGORY_COLORS: Record<string, string> = {
+  VFR: "#2f9e44",
+  MVFR: "#3987e5",
+  IFR: "#d9463c",
+  LIFR: "#b03cd9",
+};
+
+function fmtCeiling(ft: number | null): string {
+  return ft === null ? "No ceiling reported" : `${ft.toLocaleString()} ft AGL`;
+}
+
+function fmtVisibility(visib: string | null): string {
+  if (visib === null) return NOT_REPORTED;
+  return /sm$/i.test(visib) ? visib : `${visib} SM`;
+}
+
+function fmtObservedAt(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "unknown time";
+  return `${d.toISOString().slice(11, 16)}Z`;
+}
+
+function WeatherPanel({ icaoCode, weather }: { icaoCode: string | null; weather: WeatherState | undefined }) {
+  if (!icaoCode) {
+    return <p className="text-muted">No ICAO code on file — live weather unavailable.</p>;
+  }
+  if (weather === undefined || weather === "loading") {
+    return <p className="text-muted">Loading live weather…</p>;
+  }
+  if (weather === "error") {
+    return <p className="text-muted">Live weather temporarily unavailable.</p>;
+  }
+  if (weather === "unavailable") {
+    return <p className="text-muted">No live METAR report available for {icaoCode}.</p>;
+  }
+  const color = weather.flightCategory ? FLIGHT_CATEGORY_COLORS[weather.flightCategory] : DEFAULT_BORDER;
+  return (
+    <div className="flex flex-col gap-0.5">
+      <div className="flex items-center gap-1.5">
+        <span
+          className="stencil rounded px-1.5 py-0.5 text-[10px] font-semibold tracking-widest text-background"
+          style={{ backgroundColor: color }}
+        >
+          {weather.flightCategory ?? "N/A"}
+        </span>
+        <span className="text-[10px] text-muted">as of {fmtObservedAt(weather.observedAt)}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
+        <span className="text-muted">Ceiling</span>
+        <span>{fmtCeiling(weather.ceilingFt)}</span>
+        <span className="text-muted">Visibility</span>
+        <span>{fmtVisibility(weather.visibilitySm)}</span>
+        <span className="text-muted">Runway condition*</span>
+        <span>{weather.runwayCondition}</span>
+      </div>
+      <p className="text-[9px] text-muted">
+        * inferred from current METAR weather, not an official runway condition report
+      </p>
+    </div>
+  );
 }
 
 // Fixed categorical hues, one per focus country (validated CVD-safe order).
@@ -100,8 +165,25 @@ export function RegionalKnowledgeMap({
   geojson: GeoJSON.FeatureCollection | null;
 }) {
   const [activeCountry, setActiveCountry] = useState<string | null>(null);
+  const [weatherByIcao, setWeatherByIcao] = useState<Record<string, WeatherState>>({});
 
   const visibleAirbases = activeCountry ? airbases.filter((a) => a.country === activeCountry) : airbases;
+
+  const ensureWeather = useCallback(
+    (icaoCode: string | null) => {
+      if (!icaoCode || weatherByIcao[icaoCode] !== undefined) return;
+      setWeatherByIcao((prev) => ({ ...prev, [icaoCode]: "loading" }));
+      fetch(`/api/weather/${icaoCode}`)
+        .then(async (res) => {
+          if (res.status === 404) return "unavailable" as const;
+          if (!res.ok) return "error" as const;
+          return (await res.json()) as AerodromeWeather;
+        })
+        .catch(() => "error" as const)
+        .then((result) => setWeatherByIcao((prev) => ({ ...prev, [icaoCode]: result })));
+    },
+    [weatherByIcao]
+  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -151,15 +233,26 @@ export function RegionalKnowledgeMap({
             const flying = hasFlyingUnit(a.units.map((u) => u.category));
             const sources = JSON.parse(a.sources) as ArticleSource[];
             return (
-              <Marker key={a.id} position={[a.latitude, a.longitude]} icon={airbaseIcon(flying ? FLYING_MARKER_COLOR : GROUND_MARKER_COLOR)}>
+              <Marker
+                key={a.id}
+                position={[a.latitude, a.longitude]}
+                icon={airbaseIcon(flying ? FLYING_MARKER_COLOR : GROUND_MARKER_COLOR)}
+                eventHandlers={{
+                  mouseover: () => ensureWeather(a.icaoCode),
+                  click: () => ensureWeather(a.icaoCode),
+                }}
+              >
                 <Tooltip direction="top" offset={[0, -9]} opacity={0.95}>
                   <span className="font-mono text-xs">
                     <strong>{a.name}</strong>
                     <br />
                     {runwaySummary(a)}
+                    <div className="mt-1 border-t border-black/10 pt-1">
+                      <WeatherPanel icaoCode={a.icaoCode} weather={a.icaoCode ? weatherByIcao[a.icaoCode] : undefined} />
+                    </div>
                   </span>
                 </Tooltip>
-                <Popup maxWidth={300} maxHeight={340}>
+                <Popup maxWidth={300} maxHeight={420}>
                   <div className="flex flex-col gap-1.5 font-mono text-xs">
                     <p className="text-[10px] uppercase tracking-widest text-muted">
                       {a.country} — {a.baseType === "CIVIL_MILITARY_SHARED" ? "Civil/Military Shared" : "Military"}
@@ -179,6 +272,11 @@ export function RegionalKnowledgeMap({
                       <span>{a.elevationFt === null ? NOT_REPORTED : `${a.elevationFt.toLocaleString()} ft`}</span>
                       <span className="text-muted">Runways available</span>
                       <span>{a.runwayCount ?? NOT_REPORTED}</span>
+                    </div>
+
+                    <div className="mt-1 border-t border-black/10 pt-1">
+                      <p className="mb-0.5 text-[10px] uppercase tracking-widest text-muted">Live Weather</p>
+                      <WeatherPanel icaoCode={a.icaoCode} weather={a.icaoCode ? weatherByIcao[a.icaoCode] : undefined} />
                     </div>
 
                     <div className="mt-1 flex flex-col gap-1 border-t border-black/10 pt-1">
