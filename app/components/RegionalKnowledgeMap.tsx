@@ -77,7 +77,15 @@ function fmtObservedAt(iso: string): string {
   return `${d.toISOString().slice(11, 16)}Z`;
 }
 
-function WeatherPanel({ icaoCode, weather }: { icaoCode: string | null; weather: WeatherState | undefined }) {
+function WeatherPanel({
+  icaoCode,
+  weather,
+  compact = false,
+}: {
+  icaoCode: string | null;
+  weather: WeatherState | undefined;
+  compact?: boolean;
+}) {
   if (!icaoCode) {
     return <p className="text-muted">No ICAO code on file — live weather unavailable.</p>;
   }
@@ -113,6 +121,7 @@ function WeatherPanel({ icaoCode, weather }: { icaoCode: string | null; weather:
       <p className="text-[9px] text-muted">
         * inferred from current METAR weather, not an official runway condition report
       </p>
+      {!compact && <p className="text-[9px] text-muted">Source: {weather.source}</p>}
     </div>
   );
 }
@@ -248,7 +257,7 @@ export function RegionalKnowledgeMap({
                     <br />
                     {runwaySummary(a)}
                     <div className="mt-1 border-t border-black/10 pt-1">
-                      <WeatherPanel icaoCode={a.icaoCode} weather={a.icaoCode ? weatherByIcao[a.icaoCode] : undefined} />
+                      <WeatherPanel icaoCode={a.icaoCode} weather={a.icaoCode ? weatherByIcao[a.icaoCode] : undefined} compact />
                     </div>
                   </span>
                 </Tooltip>
