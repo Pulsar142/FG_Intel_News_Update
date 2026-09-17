@@ -13,15 +13,21 @@ import { publishArticle } from "@/lib/publish";
 import { CORE_REGIONS, OPTIONAL_REGIONS } from "@/lib/sources";
 
 export class NoCandidatesError extends Error {
-  constructor(region: string) {
-    super(`No relevant, dated candidates found for ${region}. Try again later or widen the cutoff.`);
+  constructor(region: string, topic?: string) {
+    super(
+      topic
+        ? `No reliable recent story found for "${topic}" in ${region}. Try a different phrasing or check back later.`
+        : `No relevant, dated candidates found for ${region}. Try again later or widen the cutoff.`
+    );
   }
 }
 
 export class AllCandidatesDuplicateError extends Error {
-  constructor(region: string) {
+  constructor(region: string, topic?: string) {
     super(
-      `Every recent candidate story for ${region} was already covered in a previous week or the archive. Try again later once new coverage appears.`
+      topic
+        ? `Every story found for "${topic}" in ${region} was already covered in a previous week or the archive. Try again once a new development is reported.`
+        : `Every recent candidate story for ${region} was already covered in a previous week or the archive. Try again later once new coverage appears.`
     );
   }
 }
@@ -34,20 +40,24 @@ export class AllCandidatesDuplicateError extends Error {
  */
 export async function generateDraftForRegion(
   region: Region,
-  options: { country?: string; weekOf?: Date } = {}
+  options: { country?: string; weekOf?: Date; topic?: string } = {}
 ) {
   const weekOf = options.weekOf ?? mondayOf(new Date());
+  const topic = options.topic?.trim() || undefined;
 
-  // Combine the curated RSS source list with a live web search — the RSS
-  // list alone shouldn't be the only way stories get found, and web search
-  // is best-effort (it's skipped, not fatal, if it errors or finds nothing).
-  const [rssCandidates, webCandidates] = await Promise.all([
-    fetchCandidatesForRegion(region, { countryFilter: options.country }),
-    searchWebCandidates(region, { country: options.country }).catch(() => []),
-  ]);
-  const candidates = [...rssCandidates, ...webCandidates];
+  // A specific admin-requested topic bypasses the curated RSS list (which
+  // isn't query-driven) and searches for exactly that story instead of the
+  // most-recent general candidate for the region.
+  const candidates = topic
+    ? await searchWebCandidates(region, { country: options.country, topic })
+    : (
+        await Promise.all([
+          fetchCandidatesForRegion(region, { countryFilter: options.country }),
+          searchWebCandidates(region, { country: options.country }).catch(() => []),
+        ])
+      ).flat();
 
-  if (candidates.length === 0) throw new NoCandidatesError(options.country ?? region);
+  if (candidates.length === 0) throw new NoCandidatesError(options.country ?? region, topic);
 
   // Most recent first; fall back to the first candidate found if none carry a date.
   const sorted = [...candidates].sort(
@@ -63,7 +73,7 @@ export async function generateDraftForRegion(
     take: 150,
   });
   const chosen = await selectFreshCandidate(sorted.slice(0, 10), existing.map((a) => a.title));
-  if (!chosen) throw new AllCandidatesDuplicateError(options.country ?? region);
+  if (!chosen) throw new AllCandidatesDuplicateError(options.country ?? region, topic);
 
   const { corroboratingSources: poolCorroboration } = crossCheck(chosen, candidates);
 

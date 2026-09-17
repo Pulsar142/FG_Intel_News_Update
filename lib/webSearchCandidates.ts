@@ -35,14 +35,24 @@ const WebCandidatesSchema = z.object({
  */
 export async function searchWebCandidates(
   region: Region,
-  options: { country?: string; cutoffDays?: number } = {}
+  options: { country?: string; cutoffDays?: number; topic?: string } = {}
 ): Promise<Candidate[]> {
-  const { country, cutoffDays = 35 } = options;
+  const { country, cutoffDays = 35, topic } = options;
   const client = new Anthropic();
 
   const focus = country ? `${country} (${REGION_LABELS[region]})` : REGION_LABELS[region];
 
-  const system = `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. Use web search to find recent, reliable news about military/defence and military-technology developments for: ${focus}.
+  const system = topic
+    ? `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin has requested a specific story: use web search to find recent, reliable news about "${topic}", scoped to ${focus}.
+
+Rules:
+- Search specifically for the requested topic — do not substitute a different, unrelated story just because it's more recent or easier to find.
+- Only return stories from the last ${cutoffDays} days, unless the requested topic is inherently about an older/historical event the admin is clearly asking about by name.
+- Prefer reputable, established outlets (e.g. Reuters, AP, BBC, Jane's, Defense News, The War Zone, Naval News, Breaking Defense, Associated Press, national broadsheets) over unverified blogs or aggregators.
+- Every result MUST be a real article you found via search — never invent a title, outlet, or URL. If search finds fewer than 6 solid results, return fewer; if it finds none at all matching the requested topic, return an empty list rather than substituting something else.
+- Prefer distinct stories over near-duplicates of the same event from the same outlet.
+- Report each article's own publish date (from its byline/dateline) as YYYY-MM-DD — never invent one; use null if you genuinely can't find it.`
+    : `You are a research assistant for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. Use web search to find recent, reliable news about military/defence and military-technology developments for: ${focus}.
 
 Focus on: new military developments and procurement, ongoing military tensions, fighter jets, transport aircraft, helicopters, air-to-air and air-to-ground weapons, surface-to-air missiles/systems, long-range weapons, rocket launchers, radar, stealth, unmanned aerial systems/vehicles, next-generation fighters and payloads, reconnaissance, space/orbital projects, indigenous defence programmes, and sea-to-air threats.
 
@@ -62,7 +72,9 @@ Rules:
     messages: [
       {
         role: "user",
-        content: `Search for recent, reliable military/defence news about ${focus} and return the structured list.`,
+        content: topic
+          ? `Search for recent, reliable news about "${topic}" (scoped to ${focus}) and return the structured list.`
+          : `Search for recent, reliable military/defence news about ${focus} and return the structured list.`,
       },
     ],
   });

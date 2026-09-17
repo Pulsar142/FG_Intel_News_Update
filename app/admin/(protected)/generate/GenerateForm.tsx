@@ -16,6 +16,7 @@ export function GenerateForm({
 }) {
   const [region, setRegion] = useState(defaultRegion ?? "SINGAPORE");
   const [country, setCountry] = useState(defaultCountry ?? "");
+  const [topic, setTopic] = useState("");
 
   const [paidState, paidAction, paidPending] = useActionState(generateAction, undefined);
   const [freeState, freeAction, freePending] = useActionState(requestFreeGenerationAction, undefined);
@@ -52,10 +53,26 @@ export function GenerateForm({
         />
       </label>
 
+      <label className="flex flex-col gap-2">
+        <span className={labelClass}>Specific topic / search request (optional)</span>
+        <input
+          type="text"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          placeholder="e.g. Vietnam's new submarine deal, F-16 upgrade program…"
+          className={fieldClass}
+        />
+        <span className="font-mono text-[10px] text-muted">
+          Leave blank to pick any on-topic story for the region/country above. When set, this
+          searches specifically for that story instead of the most recent general candidate.
+        </span>
+      </label>
+
       <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
         <form action={freeAction} className="flex flex-col gap-2 rounded border border-accent/40 p-3">
           <input type="hidden" name="region" value={region} />
           <input type="hidden" name="country" value={country} />
+          <input type="hidden" name="topic" value={topic} />
           <p className="stencil text-xs tracking-widest text-accent-strong">Free (no API credits)</p>
           <p className="text-xs text-muted">
             Queues a request — fulfilled within about an hour by a Claude Code session that
@@ -77,6 +94,7 @@ export function GenerateForm({
         <form action={paidAction} className="flex flex-col gap-2 rounded border border-border p-3">
           <input type="hidden" name="region" value={region} />
           <input type="hidden" name="country" value={country} />
+          <input type="hidden" name="topic" value={topic} />
           <p className="stencil text-xs tracking-widest text-gold">Instant (uses API credits)</p>
           <p className="text-xs text-muted">
             Calls the Claude API right now via <code>ANTHROPIC_API_KEY</code>. Needs credits in

@@ -36,9 +36,10 @@ export async function generateAction(
   await requireAdmin();
   const region = String(formData.get("region") ?? "") as Region;
   const country = String(formData.get("country") ?? "").trim() || undefined;
+  const topic = String(formData.get("topic") ?? "").trim() || undefined;
 
   try {
-    await generateDraftForRegion(region, { country });
+    await generateDraftForRegion(region, { country, topic });
   } catch (e) {
     return { error: e instanceof Error ? e.message : String(e) };
   }
@@ -60,8 +61,9 @@ export async function requestFreeGenerationAction(
   await requireAdmin();
   const region = String(formData.get("region") ?? "") as Region;
   const country = String(formData.get("country") ?? "").trim() || undefined;
+  const topic = String(formData.get("topic") ?? "").trim() || undefined;
 
-  await db.generationRequest.create({ data: { region, country } });
+  await db.generationRequest.create({ data: { region, country, topic } });
   revalidatePath("/admin/generate");
   return { ok: true };
 }

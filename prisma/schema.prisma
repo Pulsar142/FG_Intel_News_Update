@@ -108,6 +108,7 @@ model GenerationRequest {
   id          String                  @id @default(cuid())
   region      Region
   country     String?
+  topic       String? // admin's specific search request/topic (e.g. "Vietnam submarine deal"); blank = pick any on-topic story for the region/country
   status      GenerationRequestStatus @default(PENDING)
   articleId   String?
   note        String?

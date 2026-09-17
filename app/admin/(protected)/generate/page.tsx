@@ -60,8 +60,10 @@ export default async function GeneratePage({
       <h1 className="stencil text-xl text-foreground">Generate</h1>
       <p className="max-w-xl font-mono text-xs text-muted">
         Manually trigger the pipeline for a region, or type any country name under &quot;Custom&quot;
-        to draft an ad-hoc briefing for it. New drafts land in Pending Review — nothing goes live
-        until you publish it there, even if you&apos;re replacing something already published.
+        to draft an ad-hoc briefing for it. Add a specific topic to search for one particular
+        story instead of the most recent general candidate. New drafts land in Pending Review —
+        nothing goes live until you publish it there, even if you&apos;re replacing something
+        already published.
       </p>
       <GenerateForm defaultRegion={region} defaultCountry={country} />
 
@@ -78,7 +80,8 @@ export default async function GeneratePage({
               >
                 <span>
                   {REGION_LABELS[r.region]}
-                  {r.country ? ` · ${r.country}` : ""} —{" "}
+                  {r.country ? ` · ${r.country}` : ""}
+                  {r.topic ? ` · "${r.topic}"` : ""} —{" "}
                   <span className={STATUS_STYLE[r.status]}>{r.status}</span>
                   {r.note ? ` (${r.note})` : ""}
                 </span>
