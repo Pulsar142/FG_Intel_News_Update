@@ -8,6 +8,17 @@ const RATE_OPTIONS = [0.85, 1, 1.15, 1.25, 1.5];
 const RATE_STORAGE_KEY = "fgintel:voiceover-rate";
 const VOICE_STORAGE_KEY = "fgintel:voiceover-voice";
 
+// The curated voice choices this app offers — matched against whatever the
+// visitor's browser actually reports (these exact "Google ..." voices are
+// Chrome/Chromium's own TTS voices; other browsers report different names,
+// so each entry only appears if a matching voice is really available).
+const PREFERRED_VOICES: { label: string; match: (v: SpeechSynthesisVoice) => boolean }[] = [
+  { label: "Google US English", match: (v) => v.name === "Google US English" },
+  { label: "Google UK English Female", match: (v) => v.name === "Google UK English Female" },
+  { label: "Google UK English Male", match: (v) => v.name === "Google UK English Male" },
+  { label: "Mandarin (Chinese)", match: (v) => v.lang.toLowerCase().startsWith("zh") },
+];
+
 type Status = "idle" | "playing" | "paused";
 
 /**
@@ -36,6 +47,7 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
       setSupported(false);
       return;
     }
+    let savedVoice: string | null = null;
     try {
       const savedRate = window.localStorage.getItem(RATE_STORAGE_KEY);
       if (savedRate) {
@@ -45,7 +57,7 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
           rateRef.current = parsed;
         }
       }
-      const savedVoice = window.localStorage.getItem(VOICE_STORAGE_KEY);
+      savedVoice = window.localStorage.getItem(VOICE_STORAGE_KEY);
       if (savedVoice) {
         setVoiceURI(savedVoice);
         voiceURIRef.current = savedVoice;
@@ -56,7 +68,15 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
 
     const loadVoices = () => {
       const all = window.speechSynthesis.getVoices();
-      setVoices(all.filter((v) => v.lang.toLowerCase().startsWith("en")));
+      setVoices(all);
+      // Default to "Google US English" when nothing was already saved/chosen.
+      if (!savedVoice && !voiceURIRef.current) {
+        const usVoice = all.find((v) => v.name === "Google US English");
+        if (usVoice) {
+          setVoiceURI(usVoice.voiceURI);
+          voiceURIRef.current = usVoice.voiceURI;
+        }
+      }
     };
     loadVoices();
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
@@ -79,7 +99,13 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
     const utterance = new SpeechSynthesisUtterance(segments[index].text);
     utterance.rate = rateRef.current;
     const voice = voices.find((v) => v.voiceURI === voiceURIRef.current);
-    if (voice) utterance.voice = voice;
+    if (voice) {
+      try {
+        utterance.voice = voice;
+      } catch {
+        // fall back to the browser's default voice rather than breaking playback
+      }
+    }
 
     utterance.onend = () => {
       if (genRef.current !== myGen) return;
@@ -144,6 +170,10 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
 
   if (!supported || segments.length === 0) return null;
 
+  const voiceOptions = PREFERRED_VOICES.map((p) => ({ label: p.label, voice: voices.find(p.match) })).filter(
+    (p): p is { label: string; voice: SpeechSynthesisVoice } => Boolean(p.voice)
+  );
+
   const buttonClass =
     "stencil rounded border border-accent px-4 py-2 text-xs tracking-widest text-accent-strong hover:bg-accent hover:text-background transition-colors";
 
@@ -203,17 +233,17 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
             ))}
           </select>
 
-          {voices.length > 0 && (
+          {voiceOptions.length > 0 && (
             <select
               value={voiceURI}
               onChange={(e) => changeVoice(e.target.value)}
               aria-label="Voice"
-              className="max-w-[9rem] rounded border border-border bg-panel-2 px-1.5 py-1 text-xs text-foreground outline-none focus:border-accent"
+              className="max-w-[10rem] rounded border border-border bg-panel-2 px-1.5 py-1 text-xs text-foreground outline-none focus:border-accent"
             >
               <option value="">Default voice</option>
-              {voices.map((v) => (
-                <option key={v.voiceURI} value={v.voiceURI}>
-                  {v.name}
+              {voiceOptions.map(({ label, voice }) => (
+                <option key={voice.voiceURI} value={voice.voiceURI}>
+                  {label}
                 </option>
               ))}
             </select>
