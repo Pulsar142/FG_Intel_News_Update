@@ -68,12 +68,17 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
     const loadVoices = () => {
       const all = window.speechSynthesis.getVoices();
       setVoices(all);
-      // Default to "Google US English" when nothing was already saved/chosen.
+      // Default to "Google US English" when nothing was already saved/chosen,
+      // falling back to whichever other preferred voice is available so the
+      // dropdown (which offers no blank/"default" option) always has a valid
+      // selection among the choices it actually renders.
       if (!savedVoice && !voiceURIRef.current) {
-        const usVoice = all.find((v) => v.name === "Google US English");
-        if (usVoice) {
-          setVoiceURI(usVoice.voiceURI);
-          voiceURIRef.current = usVoice.voiceURI;
+        const fallback =
+          all.find((v) => v.name === "Google US English") ??
+          PREFERRED_VOICES.map((p) => all.find(p.match)).find((v): v is SpeechSynthesisVoice => Boolean(v));
+        if (fallback) {
+          setVoiceURI(fallback.voiceURI);
+          voiceURIRef.current = fallback.voiceURI;
         }
       }
     };
@@ -239,7 +244,6 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
               aria-label="Voice"
               className="max-w-[10rem] rounded border border-border bg-panel-2 px-1.5 py-1 text-xs text-foreground outline-none focus:border-accent"
             >
-              <option value="">Default voice</option>
               {voiceOptions.map(({ label, voice }) => (
                 <option key={voice.voiceURI} value={voice.voiceURI}>
                   {label}
