@@ -24,11 +24,17 @@ export default async function ArticlePage({
       label: "Summary",
       text: [article.summaryP1, article.summaryP2, article.summaryP3].filter(Boolean).join(" "),
     },
-    { label: "Did You Know", text: article.didYouKnow },
+    { label: "Did You Know?", text: `Did You Know? ${article.didYouKnow}` },
     ...(!article.analysisHidden
       ? [
-          { label: "Strategic Relevance", text: article.strategicRelevance },
-          { label: "Military Perspective", text: article.militaryPerspective },
+          {
+            label: "Strategic Relevance in South East Asia",
+            text: `Strategic Relevance in South East Asia. ${article.strategicRelevance}`,
+          },
+          {
+            label: "Military Perspective in South East Asia",
+            text: `Military Perspective in South East Asia. ${article.militaryPerspective}`,
+          },
         ]
       : []),
   ];
