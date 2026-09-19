@@ -8,14 +8,20 @@ const RATE_OPTIONS = [0.85, 1, 1.15, 1.25, 1.5];
 const RATE_STORAGE_KEY = "fgintel:voiceover-rate";
 const VOICE_STORAGE_KEY = "fgintel:voiceover-voice";
 
+function nameIs(v: SpeechSynthesisVoice, target: string): boolean {
+  return v.name.trim().toLowerCase() === target.toLowerCase();
+}
+
 // The curated voice choices this app offers — matched against whatever the
 // visitor's browser actually reports (these exact "Google ..." voices are
 // Chrome/Chromium's own TTS voices; other browsers report different names,
-// so each entry only appears if a matching voice is really available).
+// so each entry only appears if a matching voice is really available). Name
+// matching is case/whitespace-tolerant since the exact string can vary
+// slightly across Chrome versions and platforms.
 const PREFERRED_VOICES: { label: string; match: (v: SpeechSynthesisVoice) => boolean }[] = [
-  { label: "Google US English", match: (v) => v.name === "Google US English" },
-  { label: "Google UK English Female", match: (v) => v.name === "Google UK English Female" },
-  { label: "Google UK English Male", match: (v) => v.name === "Google UK English Male" },
+  { label: "Google US English", match: (v) => nameIs(v, "Google US English") },
+  { label: "Google UK English Female", match: (v) => nameIs(v, "Google UK English Female") },
+  { label: "Google UK English Male", match: (v) => nameIs(v, "Google UK English Male") },
 ];
 
 type Status = "idle" | "playing" | "paused";
@@ -74,7 +80,7 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
       // selection among the choices it actually renders.
       if (!savedVoice && !voiceURIRef.current) {
         const fallback =
-          all.find((v) => v.name === "Google US English") ??
+          all.find((v) => nameIs(v, "Google US English")) ??
           PREFERRED_VOICES.map((p) => all.find(p.match)).find((v): v is SpeechSynthesisVoice => Boolean(v));
         if (fallback) {
           setVoiceURI(fallback.voiceURI);
@@ -104,6 +110,13 @@ export function VoiceoverButton({ segments }: { segments: VoiceoverSegment[] }) 
     utterance.rate = rateRef.current;
     const voice = voices.find((v) => v.voiceURI === voiceURIRef.current);
     if (voice) {
+      // Some browsers/OS TTS backends only reliably honor the assigned voice
+      // when `lang` is set to match it too — without this, a few platforms
+      // silently fall back to the system's default accent even though
+      // `.voice` was set correctly. Set unconditionally (a plain string
+      // assignment, unlike `.voice` below, which can throw) so the lang hint
+      // still applies even if the voice object itself gets rejected.
+      utterance.lang = voice.lang;
       try {
         utterance.voice = voice;
       } catch {
