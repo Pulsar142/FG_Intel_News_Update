@@ -25,6 +25,9 @@ export default async function ArticlePage({
       text: [article.summaryP1, article.summaryP2, article.summaryP3].filter(Boolean).join(" "),
     },
     { label: "Did You Know?", text: `Did You Know? ${article.didYouKnow}` },
+    ...(!article.singaporeImpactHidden && article.singaporeImpact
+      ? [{ label: "Impact towards Singapore", text: `Impact towards Singapore. ${article.singaporeImpact}` }]
+      : []),
     ...(!article.analysisHidden
       ? [
           {
@@ -87,6 +90,15 @@ export default async function ArticlePage({
           <p className="stencil mb-2 text-xs tracking-widest text-accent-strong">Did You Know?</p>
           <p className="text-sm leading-relaxed text-foreground">{article.didYouKnow}</p>
         </div>
+
+        {!article.singaporeImpactHidden && article.singaporeImpact && (
+          <div className="mt-4 rounded border border-accent/40 bg-panel p-4">
+            <p className="stencil mb-2 text-xs tracking-widest text-accent-strong">
+              Impact towards Singapore
+            </p>
+            <p className="text-sm leading-relaxed text-foreground">{article.singaporeImpact}</p>
+          </div>
+        )}
 
         {!article.analysisHidden && (
           <div className="mt-4 flex flex-col gap-4">

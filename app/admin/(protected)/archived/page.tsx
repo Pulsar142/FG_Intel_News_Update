@@ -6,6 +6,7 @@ import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { deleteArticleAction } from "@/app/actions/admin";
 import { DeleteButton } from "@/app/components/DeleteButton";
 import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
+import { HideSingaporeImpactButton } from "@/app/admin/(protected)/edit/HideSingaporeImpactButton";
 
 export default async function ArchivedPage() {
   const archived = await db.article.findMany({
@@ -57,6 +58,7 @@ export default async function ArchivedPage() {
                   confirmText="Permanently delete this archived article? This cannot be undone."
                 />
                 <HideAnalysisButton articleId={a.id} hidden={a.analysisHidden} />
+                <HideSingaporeImpactButton articleId={a.id} hidden={a.singaporeImpactHidden} />
               </div>
             </div>
           ))}

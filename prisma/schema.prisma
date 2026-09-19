@@ -48,6 +48,8 @@ model Article {
   strategicRelevance String // "Strategic Relevance in South East Asia" — senior-analyst paragraph on why this matters to the SEA security environment
   militaryPerspective String // "Military Perspective in South East Asia" — senior-analyst paragraph on operational/capability implications for SEA armed forces
   analysisHidden   Boolean @default(false) // admin can hide the Strategic Relevance / Military Perspective sections from the public article page
+  singaporeImpact       String? // "Impact towards Singapore" — how this specific development concretely affects Singapore; nullable since older articles predate this field
+  singaporeImpactHidden Boolean @default(true) // same hide/show toggle as analysisHidden, but defaults to HIDDEN from the public page
   bullets          String // JSON string array, 3-5 quick-brief bullets
   images           String // JSON array of {url, caption, sourceUrl}
   sources          String // JSON array of {name, url}

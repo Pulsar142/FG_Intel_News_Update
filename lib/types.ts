@@ -20,6 +20,7 @@ export type ArticleInput = {
   didYouKnow: string;
   strategicRelevance: string;
   militaryPerspective: string;
+  singaporeImpact?: string;
   bullets: string[];
   images: ArticleImage[];
   sources: ArticleSource[];

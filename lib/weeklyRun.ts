@@ -109,6 +109,7 @@ export async function generateDraftForRegion(
       didYouKnow: draft.didYouKnow,
       strategicRelevance: draft.strategicRelevance,
       militaryPerspective: draft.militaryPerspective,
+      singaporeImpact: draft.singaporeImpact ?? null,
       bullets: JSON.stringify(draft.bullets),
       images: JSON.stringify(draft.images),
       sources: JSON.stringify(draft.sources),

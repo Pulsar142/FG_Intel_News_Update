@@ -5,6 +5,7 @@ import { EditForm } from "@/app/admin/(protected)/edit/EditForm";
 import { ImageForm } from "@/app/admin/(protected)/edit/ImageForm";
 import { RegenerateFieldForm } from "@/app/admin/(protected)/edit/RegenerateFieldForm";
 import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
+import { HideSingaporeImpactButton } from "@/app/admin/(protected)/edit/HideSingaporeImpactButton";
 import type { ArticleImage, ArticleSource } from "@/lib/types";
 
 export default async function EditArticlePage({
@@ -33,7 +34,7 @@ export default async function EditArticlePage({
       </p>
       <ImageForm articleId={article.id} image={images[0] ?? null} sources={sources} />
       <EditForm
-        key={`${article.didYouKnow}|${article.strategicRelevance}|${article.militaryPerspective}`}
+        key={`${article.didYouKnow}|${article.strategicRelevance}|${article.militaryPerspective}|${article.singaporeImpact}`}
         articleId={article.id}
         title={article.title}
         summaryP1={article.summaryP1}
@@ -42,6 +43,7 @@ export default async function EditArticlePage({
         didYouKnow={article.didYouKnow}
         strategicRelevance={article.strategicRelevance}
         militaryPerspective={article.militaryPerspective}
+        singaporeImpact={article.singaporeImpact ?? ""}
         bullets={JSON.parse(article.bullets)}
         articleDate={article.articleDate?.toISOString().slice(0, 10) ?? ""}
       />
@@ -63,7 +65,13 @@ export default async function EditArticlePage({
           field="militaryPerspective"
           label="Military Perspective in South East Asia"
         />
+        <RegenerateFieldForm
+          articleId={article.id}
+          field="singaporeImpact"
+          label="Impact towards Singapore"
+        />
         <HideAnalysisButton articleId={article.id} hidden={article.analysisHidden} />
+        <HideSingaporeImpactButton articleId={article.id} hidden={article.singaporeImpactHidden} />
 
         {fieldRequests.length > 0 && (
           <div className="flex flex-col gap-1 border-t border-border pt-3">
@@ -76,7 +84,9 @@ export default async function EditArticlePage({
                   ? "Did You Know?"
                   : r.field === "strategicRelevance"
                     ? "Strategic Relevance"
-                    : "Military Perspective"}{" "}
+                    : r.field === "militaryPerspective"
+                      ? "Military Perspective"
+                      : "Impact towards Singapore"}{" "}
                 — &quot;{r.question}&quot; —{" "}
                 <span
                   className={

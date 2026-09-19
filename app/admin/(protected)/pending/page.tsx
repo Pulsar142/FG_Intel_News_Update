@@ -6,6 +6,7 @@ import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { publishAction, discardDraftAction } from "@/app/actions/admin";
 import { RegenerateButtons } from "@/app/admin/(protected)/pending/RegenerateButtons";
 import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
+import { HideSingaporeImpactButton } from "@/app/admin/(protected)/edit/HideSingaporeImpactButton";
 import type { ArticleImage } from "@/lib/types";
 
 export default async function PendingReviewPage() {
@@ -70,6 +71,7 @@ export default async function PendingReviewPage() {
                 </Link>
                 <RegenerateButtons articleId={d.id} region={d.region} country={d.country} />
                 <HideAnalysisButton articleId={d.id} hidden={d.analysisHidden} />
+                <HideSingaporeImpactButton articleId={d.id} hidden={d.singaporeImpactHidden} />
                 <form action={discardDraftAction}>
                   <input type="hidden" name="articleId" value={d.id} />
                   <button className="rounded border border-border px-3 py-1.5 text-muted hover:border-danger hover:text-danger transition-colors">

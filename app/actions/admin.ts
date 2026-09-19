@@ -129,6 +129,22 @@ export async function toggleHideAnalysisAction(formData: FormData) {
   revalidatePath("/");
 }
 
+/** Same as toggleHideAnalysisAction, for the "Impact towards Singapore" section, which defaults to hidden. */
+export async function toggleHideSingaporeImpactAction(formData: FormData) {
+  await requireAdmin();
+  const articleId = String(formData.get("articleId"));
+  const article = await db.article.findUniqueOrThrow({ where: { id: articleId } });
+  await db.article.update({
+    where: { id: articleId },
+    data: { singaporeImpactHidden: !article.singaporeImpactHidden },
+  });
+  revalidatePath("/admin/pending");
+  revalidatePath("/admin/published");
+  revalidatePath("/admin/archived");
+  revalidatePath(`/admin/edit/${articleId}`);
+  revalidatePath("/");
+}
+
 export async function archiveAction(formData: FormData) {
   await requireAdmin();
   const articleId = String(formData.get("articleId"));
@@ -190,6 +206,7 @@ export async function editArticleAction(
   const articleDateRaw = String(formData.get("articleDate") ?? "").trim();
   const articleDate = articleDateRaw ? new Date(`${articleDateRaw}T00:00:00.000Z`) : null;
   const summaryP3Raw = String(formData.get("summaryP3") ?? "").trim();
+  const singaporeImpactRaw = String(formData.get("singaporeImpact") ?? "").trim();
 
   const article = await db.article.update({
     where: { id: articleId },
@@ -201,6 +218,7 @@ export async function editArticleAction(
       didYouKnow: String(formData.get("didYouKnow") ?? ""),
       strategicRelevance: String(formData.get("strategicRelevance") ?? ""),
       militaryPerspective: String(formData.get("militaryPerspective") ?? ""),
+      singaporeImpact: singaporeImpactRaw || null,
       bullets: JSON.stringify(bullets),
       articleDate,
     },
@@ -304,7 +322,9 @@ export async function regenerateFieldAction(
           ? article.didYouKnow
           : field === "strategicRelevance"
             ? article.strategicRelevance
-            : article.militaryPerspective,
+            : field === "militaryPerspective"
+              ? article.militaryPerspective
+              : article.singaporeImpact ?? "",
     });
   } catch (e) {
     return { error: e instanceof Error ? e.message : String(e) };

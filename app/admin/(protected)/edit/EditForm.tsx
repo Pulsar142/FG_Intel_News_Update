@@ -12,6 +12,7 @@ export function EditForm({
   didYouKnow,
   strategicRelevance,
   militaryPerspective,
+  singaporeImpact,
   bullets,
   articleDate,
 }: {
@@ -23,6 +24,7 @@ export function EditForm({
   didYouKnow: string;
   strategicRelevance: string;
   militaryPerspective: string;
+  singaporeImpact: string;
   bullets: string[];
   articleDate: string;
 }) {
@@ -73,6 +75,11 @@ export function EditForm({
       <label className="flex flex-col gap-2">
         <span className={label}>Military Perspective in South East Asia</span>
         <textarea name="militaryPerspective" defaultValue={militaryPerspective} rows={4} className={field} />
+      </label>
+
+      <label className="flex flex-col gap-2">
+        <span className={label}>Impact towards Singapore (hidden from the public page by default)</span>
+        <textarea name="singaporeImpact" defaultValue={singaporeImpact} rows={4} className={field} />
       </label>
 
       <label className="flex flex-col gap-2">

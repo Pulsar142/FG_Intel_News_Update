@@ -6,6 +6,7 @@ import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
 import { archiveAction, deleteArticleAction } from "@/app/actions/admin";
 import { DeleteButton } from "@/app/components/DeleteButton";
 import { HideAnalysisButton } from "@/app/admin/(protected)/edit/HideAnalysisButton";
+import { HideSingaporeImpactButton } from "@/app/admin/(protected)/edit/HideSingaporeImpactButton";
 
 export default async function PublishedPage() {
   const published = await db.article.findMany({
@@ -69,6 +70,7 @@ export default async function PublishedPage() {
                   confirmText="Permanently delete this published article? It will disappear from the live site immediately. This cannot be undone."
                 />
                 <HideAnalysisButton articleId={a.id} hidden={a.analysisHidden} />
+                <HideSingaporeImpactButton articleId={a.id} hidden={a.singaporeImpactHidden} />
               </div>
             </div>
           ))}

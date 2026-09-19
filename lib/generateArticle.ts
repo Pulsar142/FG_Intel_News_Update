@@ -33,6 +33,9 @@ const ArticleGenSchema = z.object({
   militaryPerspective: z.string().describe(
     "The 'Military Perspective in South East Asia' section: one analytical paragraph, written by a senior military analyst, on the operational/capability implications for South East Asian armed forces generally — what it means for regional air forces/navies/armies' doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country's military unless the story is genuinely about that country specifically."
   ),
+  singaporeImpact: z.string().describe(
+    "The 'Impact towards Singapore' section: one analytical paragraph on how this specific development concretely affects Singapore — SAF/RSAF capability planning, regional security posture, trade and sea-lane dependencies, diplomatic relationships, procurement decisions, or strategic calculus. Grounded in the story; if it genuinely has no meaningful Singapore-specific angle, say so plainly in one or two sentences rather than forcing a stretch."
+  ),
   bullets: z
     .array(z.string())
     .min(3)
@@ -68,6 +71,7 @@ House style, per article:
 - An in-depth summary in two paragraphs, or three when the story genuinely has enough depth (multiple developments, historical background, several involved parties) to warrant the extra room — grounded ONLY in the source text you are given. Do not invent facts, quotes, or figures not present in the source text. Don't pad to three paragraphs artificially; only do it when there's real substance for a third.
 - One "Did You Know?" passage (2-4 sentences) that goes beyond a single surface fact — bring in specific technical details, specs/numbers, historical context, or a comparison, drawn from the source text or well-established general knowledge about the equipment/topic named in it (never invented specifics).
 - ${STRATEGIC_ANALYSIS_INSTRUCTION}
+- One "Impact towards Singapore" paragraph: how this specific development concretely affects Singapore (SAF/RSAF capability planning, regional security posture, trade/sea-lane dependencies, diplomatic relationships, procurement decisions, or strategic calculus) — if it genuinely has no meaningful Singapore-specific angle, say so plainly rather than forcing a stretch.
 - 3-5 short bullet points capturing the key facts, for a "quick brief" popup.
 - A punchy, specific headline (not clickbait).
 
@@ -120,6 +124,7 @@ Write the FIGHTER GROUP INTEL briefing article for this story, following the hou
     summaryP3: gen.summaryP3 ?? undefined,
     didYouKnow: gen.didYouKnow,
     strategicRelevance: gen.strategicRelevance,
+    singaporeImpact: gen.singaporeImpact,
     militaryPerspective: gen.militaryPerspective,
     bullets: gen.bullets,
     images: [

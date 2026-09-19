@@ -11,7 +11,7 @@ const FieldSchema = z.object({
   text: z.string().describe("The rewritten paragraph(s), matching the house style exactly."),
 });
 
-export type RegenerableField = "didYouKnow" | "strategicRelevance" | "militaryPerspective";
+export type RegenerableField = "didYouKnow" | "strategicRelevance" | "militaryPerspective" | "singaporeImpact";
 
 /**
  * Rewrites a single "Did You Know?" or "Perspective" section in response to
@@ -38,13 +38,17 @@ export async function regenerateArticleField(params: {
       ? `"Did You Know?"`
       : field === "strategicRelevance"
         ? `"Strategic Relevance in South East Asia"`
-        : `"Military Perspective in South East Asia"`;
+        : field === "militaryPerspective"
+          ? `"Military Perspective in South East Asia"`
+          : `"Impact towards Singapore"`;
   const styleNote =
     field === "didYouKnow"
       ? "A meaty passage (2-4 sentences) going well beyond a single surface fact — include specific technical details, specs/numbers, historical context, or a comparison that deepens the reader's understanding. Never invent specifics not grounded in the article's summary below or well-established general knowledge about the equipment/topic it names."
       : field === "strategicRelevance"
         ? "One analytical paragraph, written by a senior military strategist, on why this development matters to the South East Asian security environment and balance of power — regional alliances/partnerships, great-power competition, sea lanes and chokepoints, technology or doctrine diffusion, or precedent it sets for the region — even when the underlying story is not itself set in South East Asia."
-        : "One analytical paragraph, written by a senior military analyst, on the operational/capability implications for South East Asian armed forces generally — doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country's military unless the story is genuinely about that country specifically.";
+        : field === "militaryPerspective"
+          ? "One analytical paragraph, written by a senior military analyst, on the operational/capability implications for South East Asian armed forces generally — doctrine, capability gaps, deterrence posture, procurement priorities, or interoperability — not narrowed to any single country's military unless the story is genuinely about that country specifically."
+          : "One analytical paragraph on how this specific development concretely affects Singapore — SAF/RSAF capability planning, regional security posture, trade/sea-lane dependencies, diplomatic relationships, procurement decisions, or strategic calculus. If it genuinely has no meaningful Singapore-specific angle, say so plainly rather than forcing a stretch.";
 
   const system = `You are the editorial desk for "FIGHTER GROUP INTEL / NEWS UPDATE", an open-source military intelligence briefing. An admin reviewing this article wants the ${fieldLabel} section rewritten to address a specific question or instruction of theirs.
 
