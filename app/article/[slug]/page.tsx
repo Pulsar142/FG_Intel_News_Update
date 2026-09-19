@@ -4,6 +4,7 @@ import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { QuickBrief } from "@/app/components/QuickBrief";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
+import { VoiceoverButton, type VoiceoverSegment } from "@/app/components/VoiceoverButton";
 import { REGION_LABELS } from "@/lib/sources";
 import { storyDateLabel } from "@/lib/weeks";
 
@@ -16,6 +17,21 @@ export default async function ArticlePage({
   const [article, session] = await Promise.all([getArticleBySlug(slug), getSession()]);
 
   if (!article || article.status === "DRAFT") notFound();
+
+  const voiceoverSegments: VoiceoverSegment[] = [
+    { label: "Headline", text: article.title },
+    {
+      label: "Summary",
+      text: [article.summaryP1, article.summaryP2, article.summaryP3].filter(Boolean).join(" "),
+    },
+    { label: "Did You Know", text: article.didYouKnow },
+    ...(!article.analysisHidden
+      ? [
+          { label: "Strategic Relevance", text: article.strategicRelevance },
+          { label: "Military Perspective", text: article.militaryPerspective },
+        ]
+      : []),
+  ];
 
   return (
     <>
@@ -32,6 +48,7 @@ export default async function ArticlePage({
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <ReliabilityBadge score={article.reliabilityScore} />
           <QuickBrief bullets={article.bullets} />
+          <VoiceoverButton segments={voiceoverSegments} />
         </div>
 
         {article.images.length > 0 && (
