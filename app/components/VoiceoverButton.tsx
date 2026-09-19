@@ -16,7 +16,6 @@ const PREFERRED_VOICES: { label: string; match: (v: SpeechSynthesisVoice) => boo
   { label: "Google US English", match: (v) => v.name === "Google US English" },
   { label: "Google UK English Female", match: (v) => v.name === "Google UK English Female" },
   { label: "Google UK English Male", match: (v) => v.name === "Google UK English Male" },
-  { label: "Mandarin (Chinese)", match: (v) => v.lang.toLowerCase().startsWith("zh") },
 ];
 
 type Status = "idle" | "playing" | "paused";
