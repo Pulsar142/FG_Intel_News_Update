@@ -4,6 +4,7 @@ import { getSession } from "@/lib/session";
 import { SiteHeader } from "@/app/components/SiteHeader";
 import { QuickBrief } from "@/app/components/QuickBrief";
 import { ReliabilityBadge } from "@/app/components/ReliabilityBadge";
+import { VoiceoverButton, type VoiceoverSegment } from "@/app/components/VoiceoverButton";
 import { AVIATION_SAFETY_REGION_LABELS } from "@/lib/aviationSafety";
 import { format } from "date-fns";
 
@@ -16,6 +17,19 @@ export default async function AviationSafetyArticlePage({
   const [article, session] = await Promise.all([getAviationSafetyArticleBySlug(slug), getSession()]);
 
   if (!article || article.status === "DRAFT") notFound();
+
+  const voiceoverSegments: VoiceoverSegment[] = [
+    { label: "Headline", text: article.title },
+    {
+      label: "Summary",
+      text: [article.summaryP1, article.summaryP2, article.summaryP3].filter(Boolean).join(" "),
+    },
+    { label: "Safety Analysis", text: `Safety Analysis. ${article.safetyAnalysis}` },
+    { label: "Preventative Measures", text: `Preventative Measures. ${article.preventativeMeasures}` },
+    ...(article.hfacsAnalysis
+      ? [{ label: "HFACS Categorisation", text: `HFACS Categorisation. ${article.hfacsAnalysis}` }]
+      : []),
+  ];
 
   return (
     <>
@@ -35,6 +49,7 @@ export default async function AviationSafetyArticlePage({
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <ReliabilityBadge score={article.reliabilityScore} />
           <QuickBrief bullets={article.bullets} />
+          <VoiceoverButton segments={voiceoverSegments} />
           {article.aircraftInfo && (
             <span className="font-mono text-[10px] text-muted">{article.aircraftInfo}</span>
           )}
