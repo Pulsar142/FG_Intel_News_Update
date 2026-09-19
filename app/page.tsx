@@ -14,6 +14,7 @@ import { SiteHeader } from "@/app/components/SiteHeader";
 import { RegionTabs } from "@/app/components/RegionTabs";
 import { ArchiveSidebar } from "@/app/components/ArchiveSidebar";
 import { MilitaryFunFacts } from "@/app/components/MilitaryFunFacts";
+import { AskExpertBox } from "@/app/components/AskExpertBox";
 import { AircraftRecognition } from "@/app/components/AircraftRecognition";
 import { ArticleCardView } from "@/app/components/ArticleCardView";
 import { WeeklyBriefing } from "@/app/components/WeeklyBriefing";
@@ -54,6 +55,7 @@ export default async function HomePage({
 
         <div className="flex flex-col gap-6 lg:flex-row">
           <div className="flex flex-col gap-4 lg:shrink-0">
+            <AskExpertBox />
             <MilitaryFunFacts fact={funFact} />
             <AircraftRecognition card={aircraftCard} />
             <ArchiveSidebar tree={archiveTree} activeWeek={week} />

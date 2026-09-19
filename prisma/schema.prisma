@@ -211,6 +211,32 @@ model AircraftRecognitionRequest {
   @@index([status])
 }
 
+enum ExpertAnswerFormat {
+  PARAGRAPH
+  BULLETS
+}
+
+// A public viewer's free-text question submitted from the "Ask the Expert"
+// box on the front page. No accounts exist on this site, so the browser
+// itself tracks which questions belong to it (via a token stored in
+// localStorage) and polls this row's status — there is no admin
+// review/publish step, matching the same "free workflow, direct to viewer"
+// treatment as FunFact/AircraftRecognition. Picked up by the hourly
+// free-generation Routine, which researches and writes the answer itself.
+model ExpertQuestion {
+  id            String                  @id @default(cuid())
+  question      String
+  status        GenerationRequestStatus @default(PENDING)
+  answer        String? // paragraph text, or JSON.stringify'd string[3] when answerFormat is BULLETS
+  answerFormat  ExpertAnswerFormat?
+  sources       String? // JSON array of {name, url}, or null if no citable source was used
+  note          String? // short reason when status is FAILED
+  requestedAt   DateTime                @default(now())
+  fulfilledAt   DateTime?
+
+  @@index([status])
+}
+
 enum AviationSafetyRegion {
   ASIA
   GLOBAL
