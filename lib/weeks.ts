@@ -1,8 +1,21 @@
-import { startOfWeek, format } from "date-fns";
+import { format } from "date-fns";
 
-/** Monday of the week containing `date` (weekStartsOn: 1 = Monday), at midnight. */
+/**
+ * Monday (UTC midnight) of the UTC week containing `date`. Computed in UTC
+ * explicitly, not the process's local timezone — every `weekOf` in this app
+ * is stored/compared as a UTC-midnight date, and the scheduled maintenance
+ * jobs that call this (weekly generation, weekly archive) run in sessions
+ * whose local timezone isn't guaranteed to be UTC. Using date-fns's
+ * `startOfWeek` (local-time-based) here previously meant a job firing after
+ * UTC midnight, but before local midnight in a timezone behind UTC, would
+ * compute the wrong (previous) Monday and silently skip archiving that week.
+ */
 export function mondayOf(date: Date): Date {
-  return startOfWeek(date, { weekStartsOn: 1 });
+  const utcMidnight = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = utcMidnight.getUTCDay(); // 0 = Sunday ... 6 = Saturday
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  utcMidnight.setUTCDate(utcMidnight.getUTCDate() + diffToMonday);
+  return utcMidnight;
 }
 
 export function weekLabel(weekOf: Date): string {
