@@ -13,6 +13,7 @@ import { publishFunFact } from "@/lib/publishFunFact";
 import { generateAircraftRecognition } from "@/lib/generateAircraftRecognition";
 import { publishAircraftRecognition } from "@/lib/publishAircraftRecognition";
 import { generateAviationSafetyArticle, aviationSlug } from "@/lib/generateAviationSafety";
+import { publishAviationSafetyArticle } from "@/lib/publishAviationSafety";
 import { mondayOf } from "@/lib/weeks";
 import { getMonth, getYear } from "date-fns";
 import type { Region, AviationSafetyRegion, AirbaseType, AirbaseUnitCategory } from "@/generated/prisma/client";
@@ -632,11 +633,11 @@ export async function cancelAviationSafetyRequestAction(formData: FormData) {
   revalidatePath("/admin/aviation-safety");
 }
 
-/** Publishes an Aviation Safety briefing — unlike Fun Facts/Aircraft Recognition, many can be published at once. */
+/** Publishes an Aviation Safety briefing — unlike Fun Facts/Aircraft Recognition, many can be published at once, including several in the same region/week (separate incidents); publishing auto-archives any still-published briefing from a strictly older week, matching publishArticle()'s prior-weeks backstop for regular Articles. */
 export async function publishAviationSafetyAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
-  await db.aviationSafetyArticle.update({ where: { id }, data: { status: "PUBLISHED", publishedAt: new Date() } });
+  await publishAviationSafetyArticle(id);
   revalidatePath("/admin/aviation-safety");
   revalidatePath("/aviation-safety");
 }
