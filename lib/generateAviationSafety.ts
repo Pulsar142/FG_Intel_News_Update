@@ -88,7 +88,11 @@ function regionScopeInstruction(region: AviationSafetyRegion, country?: string):
     case "ASIA":
       return "Scope: find an incident that occurred in Asia (South, East, or Southeast Asia), or one involving an Asia-based operator/airline/air force.";
     case "GLOBAL":
-      return "Scope: find an incident that occurred OUTSIDE Asia (to keep this distinct from the Asia-scoped briefing) — anywhere else in the world.";
+      return "Scope: find an incident that occurred OUTSIDE Asia, Europe, and North America (to keep this distinct from those other scoped briefings) — anywhere else in the world.";
+    case "EUROPE":
+      return "Scope: find an incident that occurred in Europe, or one involving a Europe-based operator/airline/air force.";
+    case "NORTH_AMERICA":
+      return "Scope: find an incident that occurred in North America (United States, Canada, Mexico, or the Caribbean), or one involving a North America-based operator/airline/air force.";
     case "CUSTOM":
       return `Scope: find an incident specific to ${country ?? "the requested country"} — occurring there, or involving that country's operators/airlines/air force.`;
   }

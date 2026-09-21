@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { AviationSafetyRegion } from "@/generated/prisma/client";
-import { AVIATION_SAFETY_REGION_LABELS } from "@/lib/aviationSafety";
+import { AVIATION_SAFETY_REGION_LABELS, AVIATION_SAFETY_TAB_REGIONS } from "@/lib/aviationSafety";
 
 export function AviationSafetyRegionTabs({ active }: { active?: AviationSafetyRegion }) {
-  const regions: AviationSafetyRegion[] = ["ASIA", "GLOBAL"];
+  const regions = AVIATION_SAFETY_TAB_REGIONS;
   return (
     <nav className="scrollbar-olive flex gap-2 overflow-x-auto pb-1">
       <Link

@@ -13,6 +13,7 @@ import { AviationSafetyCardView } from "@/app/components/AviationSafetyCardView"
 import { AviationSafetyTrendChart } from "@/app/components/AviationSafetyTrendChart";
 import { ArchiveSidebar } from "@/app/components/ArchiveSidebar";
 import type { AviationSafetyRegion } from "@/generated/prisma/client";
+import { AVIATION_SAFETY_TAB_REGIONS } from "@/lib/aviationSafety";
 
 export default async function AviationSafetyPage({
   searchParams,
@@ -20,7 +21,9 @@ export default async function AviationSafetyPage({
   searchParams: Promise<{ region?: string; week?: string }>;
 }) {
   const { region, week } = await searchParams;
-  const activeRegion = region === "ASIA" || region === "GLOBAL" ? (region as AviationSafetyRegion) : undefined;
+  const activeRegion = AVIATION_SAFETY_TAB_REGIONS.includes(region as AviationSafetyRegion)
+    ? (region as AviationSafetyRegion)
+    : undefined;
   const [archiveTree, brief, briefHistory] = await Promise.all([
     getAviationSafetyArchiveTree(),
     getLatestAviationSafetyBrief(),

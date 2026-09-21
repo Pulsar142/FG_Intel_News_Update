@@ -24,7 +24,8 @@ export function AviationSafetyForm() {
         <p className="stencil text-xs tracking-widest text-danger">Request an Aviation Safety Briefing</p>
         <p className="mt-1 text-xs text-muted">
           Baseline: two briefings auto-generate every Monday 09:00 SGT — one Asia-scoped, one
-          Global (outside Asia). Use this to request an extra one, including any specific country.
+          Global (outside Asia, Europe, and North America). Use this to request an extra one for
+          Europe, North America, or any specific country.
         </p>
       </div>
 
