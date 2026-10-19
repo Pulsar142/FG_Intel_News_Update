@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
  * archive. Mirrors lib/publish.ts's archivePriorWeeks() for regular Articles.
  */
 export async function archivePriorAviationSafetyWeeks(currentWeekOf: Date) {
-  await db.aviationSafetyArticle.updateMany({
+  return db.aviationSafetyArticle.updateMany({
     where: { status: "PUBLISHED", weekOf: { lt: currentWeekOf } },
     data: { status: "ARCHIVED" },
   });

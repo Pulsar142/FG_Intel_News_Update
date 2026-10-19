@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 
 /** Archives every PUBLISHED article from a prior week once a new week goes live. */
 export async function archivePriorWeeks(currentWeekOf: Date) {
-  await db.article.updateMany({
+  return db.article.updateMany({
     where: { status: "PUBLISHED", weekOf: { lt: currentWeekOf } },
     data: { status: "ARCHIVED" },
   });
